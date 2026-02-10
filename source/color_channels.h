@@ -55,6 +55,19 @@ extern Color p2_color;
 #define THREEDL_TRIGGER 744
 #define COL_TRIGGER 899
 
+#define TRIGGER_FADE_NONE 22
+#define TRIGGER_FADE_UP 23
+#define TRIGGER_FADE_DOWN 24
+#define TRIGGER_FADE_RIGHT 26
+#define TRIGGER_FADE_LEFT 25
+#define TRIGGER_FADE_SCALE_IN 27
+#define TRIGGER_FADE_SCALE_OUT 28
+#define TRIGGER_FADE_INWARDS 58
+#define TRIGGER_FADE_OUTWARDS 59 
+#define TRIGGER_FADE_LEFT_SEMICIRCLE 56
+#define TRIGGER_FADE_RIGHT_SEMICIRCLE 57
+
+
 void calculate_lbg();
 void init_col_channels();
 void handle_col_triggers();

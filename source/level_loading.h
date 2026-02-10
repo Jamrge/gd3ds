@@ -32,6 +32,7 @@ typedef struct {
     unsigned short detail_col_channel;
     unsigned short target_color_id;
 
+    unsigned char transition_applied;
     unsigned char trig_colorR, trig_colorG, trig_colorB;
     bool tintGround;
     bool p1_color, p2_color;

@@ -1,6 +1,7 @@
 #include "graphics.h"
 #include "objects.h"
 #include "main.h"
+#include "math_helpers.h"
 #include "color_channels.h"
 
 int sprite_count = 0;
@@ -15,6 +16,8 @@ static SortItem buf_b[MAX_SPRITES];
 
 static SpriteObject viewable_objects[MAX_SPRITES];
 static SpriteObject *viewable_objects_ptr[MAX_SPRITES];
+
+int current_fading_effect = FADE_NONE;
 
 static inline float normalize_angle(float a)
 {
@@ -89,6 +92,18 @@ int get_color_channel(int col_type, Object *obj, const GameObject *game_obj) {
 		}
 	}
 	return col_channel;
+}
+
+float get_fading_obj_fade(Object *obj, float x, float right_edge) {
+    float fading_obj_width = FADING_OBJ_WIDTH;
+    if (x < FADING_OBJ_PADDING || x > right_edge - FADING_OBJ_PADDING)
+        return 1.f;
+    else if (x < FADING_OBJ_PADDING + fading_obj_width)
+        return clampf(1.f - ((x - FADING_OBJ_PADDING) / fading_obj_width), 0.05f, 1.f);
+    else if (x > right_edge - fading_obj_width - FADING_OBJ_PADDING)
+        return clampf(1.f - ((right_edge - (x + FADING_OBJ_PADDING)) / fading_obj_width), 0.05f, 1.f);
+    else
+        return 0.05f;
 }
 
 void spawn_object_at(
@@ -284,6 +299,172 @@ int get_object_layers(int id) {
 	return count;
 }
 
+bool object_fades(Object *obj) {
+	switch (obj->id) {
+		case 146:
+		case 147:
+		case 206:
+		case 204:
+		case 673:
+		case 674:
+		case 144:
+		case 145:
+		case 205:
+		case 459:
+			return true;
+	}
+	return false;
+}
+
+int obj_edge_fade(float x, int right_edge) {
+    if (x < 0 || x > right_edge)
+        return 0;
+    else if (x < FADE_WIDTH)
+        return (int)(255.0f * (x / FADE_WIDTH));
+    else if (x > right_edge - FADE_WIDTH)
+        return (int)(255.0f * ((right_edge - x) / FADE_WIDTH));
+    else
+        return 255;
+}
+
+int get_xy_fade_offset(float x, int right_edge) {
+    int fade = obj_edge_fade(x, right_edge);
+    return (255 - fade) / 2;
+}
+
+float get_in_scale_fade(float x, int right_edge) {
+    int fade = obj_edge_fade(x, right_edge);
+    return (fade / 255.f);
+}
+
+float get_out_scale_fade(float x, int right_edge) {
+    int fade = 255 - obj_edge_fade(x, right_edge);
+    return 1 + ((fade / 255.f) / 2);
+}
+
+int get_opacity(Object *obj, float x) {
+    int opacity = obj_edge_fade(x, SCREEN_WIDTH / SCALE);
+
+    switch (obj->id) {
+        case 90:
+        case 91:
+        case 92:
+        case 93:
+        case 94:
+        case 95:
+        case 96:
+        case 309:
+        case 311:
+        case 1747:
+        case 1748:
+            if (obj->transition_applied == FADE_NONE) opacity = 255;
+            break;
+            
+        case 207:
+        case 208:
+        case 209:
+        case 210:
+        case 211:
+        case 212:
+        case 213:
+        case 693:
+        case 694:
+        case 331:
+        case 333:
+            bool blending = channels[obj->detail_col_channel].blending;
+            if (!blending && obj->transition_applied == FADE_NONE) opacity = 255;
+            break;
+    }
+
+    return opacity;
+}
+
+void handle_special_fading(Object *obj, float calc_x, float calc_y) {
+    switch (current_fading_effect) {
+        case FADE_INWARDS:
+            if (calc_y > (SCREEN_HEIGHT / SCALE / 2)) {
+                obj->transition_applied = FADE_UP;
+            } else {
+                obj->transition_applied = FADE_DOWN;
+            }
+            break;
+        case FADE_OUTWARDS:
+            if (calc_y > (SCREEN_HEIGHT / SCALE / 2)) {
+                obj->transition_applied = FADE_DOWN;
+            } else {
+                obj->transition_applied = FADE_UP;
+            }
+            break;
+        case FADE_CIRCLE_LEFT:
+            if (calc_x > (SCREEN_WIDTH / SCALE / 2)) {
+                if (calc_y > (SCREEN_HEIGHT / SCALE / 2)) {
+                    obj->transition_applied = FADE_UP_STATIONARY;
+                } else {
+                    obj->transition_applied = FADE_DOWN_STATIONARY;
+                }
+            } else {
+                if (calc_y > (SCREEN_HEIGHT / SCALE / 2)) {
+                    obj->transition_applied = FADE_UP_SLOW;
+                } else {
+                    obj->transition_applied = FADE_DOWN_SLOW;
+                }
+            }
+            break;
+        case FADE_CIRCLE_RIGHT:
+            if (calc_x > (SCREEN_WIDTH / SCALE / 2)) {
+                if (calc_y > (SCREEN_HEIGHT / SCALE / 2)) {
+                    obj->transition_applied = FADE_UP_SLOW;
+                } else {
+                    obj->transition_applied = FADE_DOWN_SLOW;
+                }
+            } else {
+                if (calc_y > (SCREEN_HEIGHT / SCALE / 2)) {
+                    obj->transition_applied = FADE_UP_STATIONARY;
+                } else {
+                    obj->transition_applied = FADE_DOWN_STATIONARY;
+                }
+            }
+            break;
+        default:
+            obj->transition_applied = current_fading_effect;  
+    }   
+}
+
+void get_fade_vars(Object *obj, float x, int *fade_x, int *fade_y, float *fade_scale) {
+    switch (obj->transition_applied) {
+        case FADE_NONE:
+            break;
+        case FADE_UP:
+            *fade_y = get_xy_fade_offset(x, SCREEN_WIDTH / SCALE);
+            break;
+        case FADE_DOWN:
+            *fade_y = -get_xy_fade_offset(x, SCREEN_WIDTH / SCALE);
+            break;
+        case FADE_RIGHT:
+            *fade_x = get_xy_fade_offset(x, SCREEN_WIDTH / SCALE);
+            break;
+        case FADE_LEFT:
+            *fade_x = -get_xy_fade_offset(x, SCREEN_WIDTH / SCALE);
+            break;
+        case FADE_SCALE_IN:
+            *fade_scale = get_in_scale_fade(x, SCREEN_WIDTH / SCALE);
+            break;
+        case FADE_SCALE_OUT:
+            *fade_scale = get_out_scale_fade(x, SCREEN_WIDTH / SCALE);
+            break;
+        case FADE_UP_SLOW:
+            *fade_x = get_xy_fade_offset(x, SCREEN_WIDTH / SCALE) * ((current_fading_effect == FADE_CIRCLE_RIGHT) ? 1 : -1);
+        case FADE_UP_STATIONARY:
+            *fade_y = get_xy_fade_offset(x, SCREEN_WIDTH / SCALE) / 3;
+            break;
+        case FADE_DOWN_SLOW:
+            *fade_x = get_xy_fade_offset(x, SCREEN_WIDTH / SCALE) * ((current_fading_effect == FADE_CIRCLE_RIGHT) ? 1 : -1);
+        case FADE_DOWN_STATIONARY:
+            *fade_y = -get_xy_fade_offset(x, SCREEN_WIDTH / SCALE) / 3;
+            break;
+    }
+}
+
 void draw_objects() {
 	sprite_count = 0;
 
@@ -297,13 +478,23 @@ void draw_objects() {
 
 		Section *sec = get_or_create_section(section);
 		for (int i = 0; i < sec->object_count; i++) {
-
 			Object *obj = sec->objects[i];
 			
             float calc_x = ((obj->x - cam_x));
             float calc_y = SCREEN_HEIGHT - ((obj->y - cam_y));  
 			if (calc_x < -60 || calc_x >= (SCREEN_WIDTH / SCALE) + 60) continue;
 			if (calc_y < -60 || calc_y >= (SCREEN_HEIGHT / SCALE) + 60) continue;
+
+            int fade_val = obj_edge_fade(calc_x, SCREEN_WIDTH / SCALE);
+            bool fade_edge = (fade_val == 255 || fade_val == 0);
+
+			if (fade_edge) handle_special_fading(obj, calc_x, calc_y);
+			int fade_x = 0;
+			int fade_y = 0;
+
+			float fade_scale = 1.f;
+
+			get_fade_vars(obj, calc_x, &fade_x, &fade_y, &fade_scale);
 
 			spawn_object_at(
 				obj,
@@ -313,7 +504,7 @@ void draw_objects() {
 				obj->rotation,
 				obj->flippedH,
 				obj->flippedV,
-				1.0f
+				fade_scale
 			);
 		}
 	}
@@ -359,8 +550,37 @@ void draw_objects() {
 			C2D_Prepare();
 			blend_enabled = false;
 		}
+
+		Object *game_object = obj->obj;
 		
-		C2D_PlainImageTint(&tint, C2D_Color32(col.color.r, col.color.g, col.color.b, 255 * obj->opacity), 1.f);
-		C2D_DrawSpriteTinted(&viewable_objects_ptr[s]->spr, &tint);
+		float x = ((game_object->x - cam_x));
+
+		int fade_x = 0;
+		int fade_y = 0;
+
+		float fade_scale = 1.f;
+
+		get_fade_vars(game_object, x, &fade_x, &fade_y, &fade_scale);
+
+		float opacity = obj->opacity;
+		if (object_fades(game_object)) {
+			opacity *= get_fading_obj_fade(game_object, x, SCREEN_WIDTH / SCALE);
+		}
+
+		// Handle special fade types
+        if (game_object->transition_applied == FADE_DOWN_STATIONARY || game_object->transition_applied == FADE_UP_STATIONARY) {
+            if (opacity < 255) {
+                if (x > (SCREEN_WIDTH / SCALE) / 2) {
+                    obj->spr.params.pos.x = SCREEN_WIDTH / SCALE - FADE_WIDTH;
+                } else {
+                    obj->spr.params.pos.x = FADE_WIDTH;
+                }
+            }
+        }
+
+		C2D_SpriteMove(&obj->spr, fade_x, fade_y);
+		
+		C2D_PlainImageTint(&tint, C2D_Color32(col.color.r, col.color.g, col.color.b, get_opacity(game_object, x) * opacity), 1.f);
+		C2D_DrawSpriteTinted(&obj->spr, &tint);
 	}
 }

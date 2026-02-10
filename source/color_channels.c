@@ -5,6 +5,7 @@
 #include <math.h>
 #include "level_loading.h"
 #include "main.h"
+#include "graphics.h"
 
 Color p1_color;
 Color p2_color;
@@ -146,50 +147,50 @@ void upload_to_buffer(Object *obj, int channel) {
 
 void run_trigger(Object *obj) {
     switch (obj->id) {
-//        case TRIGGER_FADE_NONE:
-//            current_fading_effect = FADE_NONE;
-//            break;
-//            
-//        case TRIGGER_FADE_UP:
-//            current_fading_effect = FADE_UP;
-//            break;
-//            
-//        case TRIGGER_FADE_DOWN:
-//            current_fading_effect = FADE_DOWN;
-//            break;
-//            
-//        case TRIGGER_FADE_RIGHT:
-//            current_fading_effect = FADE_RIGHT;
-//            break;
-//            
-//        case TRIGGER_FADE_LEFT:
-//            current_fading_effect = FADE_LEFT;
-//            break;
-//            
-//        case TRIGGER_FADE_SCALE_IN:
-//            current_fading_effect = FADE_SCALE_IN;
-//            break;
-//            
-//        case TRIGGER_FADE_SCALE_OUT:
-//            current_fading_effect = FADE_SCALE_OUT;
-//            break;
-//        
-//        case TRIGGER_FADE_INWARDS:
-//            current_fading_effect = FADE_INWARDS;
-//            break;
-//
-//        case TRIGGER_FADE_OUTWARDS:
-//            current_fading_effect = FADE_OUTWARDS;
-//            break;
-//        
-//        case TRIGGER_FADE_LEFT_SEMICIRCLE:
-//            current_fading_effect = FADE_CIRCLE_LEFT;
-//            break;
-//
-//        case TRIGGER_FADE_RIGHT_SEMICIRCLE:
-//            current_fading_effect = FADE_CIRCLE_RIGHT;
-//            break;
-//
+        case TRIGGER_FADE_NONE:
+            current_fading_effect = FADE_NONE;
+            break;
+            
+        case TRIGGER_FADE_UP:
+            current_fading_effect = FADE_UP;
+            break;
+            
+        case TRIGGER_FADE_DOWN:
+            current_fading_effect = FADE_DOWN;
+            break;
+            
+        case TRIGGER_FADE_RIGHT:
+            current_fading_effect = FADE_RIGHT;
+            break;
+            
+        case TRIGGER_FADE_LEFT:
+            current_fading_effect = FADE_LEFT;
+            break;
+            
+        case TRIGGER_FADE_SCALE_IN:
+            current_fading_effect = FADE_SCALE_IN;
+            break;
+            
+        case TRIGGER_FADE_SCALE_OUT:
+            current_fading_effect = FADE_SCALE_OUT;
+            break;
+        
+        case TRIGGER_FADE_INWARDS:
+            current_fading_effect = FADE_INWARDS;
+            break;
+
+        case TRIGGER_FADE_OUTWARDS:
+            current_fading_effect = FADE_OUTWARDS;
+            break;
+        
+        case TRIGGER_FADE_LEFT_SEMICIRCLE:
+            current_fading_effect = FADE_CIRCLE_LEFT;
+            break;
+
+        case TRIGGER_FADE_RIGHT_SEMICIRCLE:
+            current_fading_effect = FADE_CIRCLE_RIGHT;
+            break;
+
         case BG_TRIGGER:
             upload_to_buffer(obj, CHANNEL_BG);
             if (!obj->tintGround) break;
@@ -253,7 +254,7 @@ void handle_triggers() {
         for (int i = 0; i < sec->object_count; i++) {
             Object *obj = sec->objects[i];
             
-            if (!obj->activated) {
+            if (!obj->activated && !obj->touch_triggered) {
                 //if (obj->touch_triggered) {
                 //    // Try p1
                 //    if (intersect(

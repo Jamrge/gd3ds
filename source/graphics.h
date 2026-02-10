@@ -2,6 +2,11 @@
 #include <citro2d.h>
 #include "level_loading.h"
 
+#define FADING_OBJ_PADDING 90
+#define FADING_OBJ_WIDTH 180
+
+#define FADE_WIDTH 75
+
 #define MAX_SPRITES   8192
 #define SCALE (SCREEN_HEIGHT / (11.f * 30))
 
@@ -26,6 +31,27 @@ typedef struct {
     SpriteObject *obj;
     uint32_t key;
 } SortItem;
+
+enum FadingEffects {
+    FADE_NONE,
+    FADE_UP,
+    FADE_DOWN,
+    FADE_RIGHT,
+    FADE_LEFT,
+    FADE_SCALE_IN,
+    FADE_SCALE_OUT,
+    FADE_INWARDS,
+    FADE_OUTWARDS,
+    FADE_CIRCLE_LEFT,
+    FADE_CIRCLE_RIGHT,
+    FADE_UP_SLOW,
+    FADE_DOWN_SLOW,
+    FADE_UP_STATIONARY,
+    FADE_DOWN_STATIONARY,
+    FADE_COUNT
+};
+
+extern int current_fading_effect;
 
 extern int sprite_count;
 extern C2D_SpriteSheet spriteSheet;
