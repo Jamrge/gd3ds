@@ -16,17 +16,49 @@
 float cam_x = 0;
 float cam_y = 0;
 
+void no_dsp_firmware(void) {
+	consoleInit(GFX_TOP, NULL);
+	printf("\x1b[01;00H/////////////FATAL///ERROR////////////////////////");
+	printf("\x1b[03;00HNDSP could not be initalized.");
+	printf("\x1b[05;00HThis is probably because your dspfirm is missing.");
+	printf("\x1b[07;00HPut the ndsp firmwared called dspfirm.cdc");
+	printf("\x1b[09;00Hon your sd card in sdmc:/3ds");
+	printf("\x1b[11;00HCitra/Azahar users only need the file to be there,");
+	printf("\x1b[13;00Hit can be empty.");
+	printf("\x1b[15;00HPress start to exit.");
+	printf("\x1b[30;00H//////////////////////////////////////////////////");
+	while (aptMainLoop()) {
+		gspWaitForVBlank();
+		hidScanInput();
+		
+		u32 kDown = hidKeysDown();
+		if (kDown & KEY_START)
+			break;
+
+		gfxSwapBuffers();
+		gfxFlushBuffers();
+	}
+	
+	gfxExit();
+	romfsExit();
+	exit(22);
+}
+
 int main(int argc, char* argv[]) {
 	// Init libs
 	romfsInit();
 	gfxInitDefault();
+	
+	if(ndspInit()) {
+		no_dsp_firmware();
+	}
+
 	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
 	C2D_Init(MAX_SPRITES);
 	C2D_Prepare();
 	consoleInit(GFX_BOTTOM, NULL);
 	osSetSpeedupEnable(1);
 	
-	printf("ndps %ld\n", ndspInit());
 
 	// Create screens
 	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
