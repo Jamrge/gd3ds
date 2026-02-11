@@ -23,6 +23,8 @@ static int audio_channels;
 static volatile bool quit = false;
 static volatile bool skip = false;
 
+static Thread threadId = NULL;
+
 static ndspWaveBuf waveBuf[NUM_BUFS];
 
 u32 samplerate_mp3(void)
@@ -70,8 +72,7 @@ void audio_init() {
 }
 
 void audio_exit() {
-    ndspChnReset(0);
-	ndspExit();
+    ndspChnReset(MUSIC_CHANNEL);
     linearFree(audioBuffer);
 }
 
@@ -102,7 +103,7 @@ u32 decode_mp3(void* buffer)
 	return done / (sizeof(int16_t));
 }
 
-void audioThread(void *const file) {
+void audio_thread(void *const file) {
     skip = false;
     bool lastbuf = false;
 
@@ -124,27 +125,32 @@ void audioThread(void *const file) {
 
                 buf->nsamples = read / channels_mp3();
 
-                DSP_FlushDataCache(
-                    buf->data_pcm16,
-                    buf->nsamples * channels_mp3() * sizeof(int16_t)
-                );
-
                 ndspChnWaveBufAdd(MUSIC_CHANNEL, buf);
             }
+            
+            DSP_FlushDataCache(
+                buf->data_pcm16,
+                buf->nsamples * channels_mp3() * sizeof(int16_t)
+            );
         }
 
         if (lastbuf)
             break;
 
+        if (ndspChnIsPaused(MUSIC_CHANNEL))
+            continue;
+
         LightEvent_Wait(&soundEvent);
     }
 
+    threadId = NULL;
+    
     audio_exit();
 }
 
+// Play an mp3 file defined by a path
 int play_mp3(char *path) {
-
-    char *song = path;
+    quit = false;
 
     int32_t priority = 0x30;
     svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
@@ -154,11 +160,46 @@ int play_mp3(char *path) {
     priority = priority < 0x18 ? 0x18 : priority;
     priority = priority > 0x3F ? 0x3F : priority;
 
-    const Thread threadId = threadCreate(audioThread, song,
+    threadId = threadCreate(audio_thread, path,
                                          THREAD_STACK_SZ, priority,
-                                         THREAD_AFFINITY, false);
+                                         THREAD_AFFINITY, true);
 
     printf("musica play on thread %p\n", threadId);
 
     return 0;
+}
+
+void seek(u32 location) {
+    if(location > mpg123_length(mh)) {
+		return;
+	}
+	mpg123_seek(mh, location, SEEK_SET);
+}
+
+// Set position in seconds
+void seek_mp3(float time) {
+    if (time < 0) time = 0;
+
+    int location = time * samplerate_mp3();
+    if (!quit) {
+		bool oldstate = ndspChnIsPaused(MUSIC_CHANNEL);
+		ndspChnSetPaused(MUSIC_CHANNEL, true); //Pause playback...
+		seek(location);
+		ndspChnSetPaused(MUSIC_CHANNEL, oldstate); //once the seeking is done, playback can continue.
+	}
+}
+
+// Pause or unpause playback
+void toggle_playback_mp3() {
+    bool paused = ndspChnIsPaused(MUSIC_CHANNEL);
+	ndspChnSetPaused(MUSIC_CHANNEL, !paused);
+}
+
+// Stop playback
+void stop_mp3() {
+    if (!quit && threadId) {
+        quit = true;
+        threadJoin(threadId, U64_MAX);
+        threadId = NULL;
+    }
 }

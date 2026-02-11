@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
 	C2D_ImageTint tint = { 0 };
 	C2D_SetTintMode(C2D_TintMult);
 
-	int returned = load_level("romfs:/TheoryofEverything.gmd");
+	int returned = load_level("romfs:/CantLetGo.gmd");
 	if (returned) printf("\x1b[9;1HFailed %d", returned);
 
 	returned = play_mp3("romfs:/songs/CantLetGo.mp3");
@@ -65,6 +65,12 @@ int main(int argc, char* argv[]) {
 		u32 kDown = hidKeysDown();
 		if (kDown & KEY_START)
 			break; // break in order to return to hbmenu
+			
+		if (kDown & KEY_SELECT)
+			seek_mp3(0);
+			
+		if (kDown & KEY_X)
+			toggle_playback_mp3();
 
 		u32 kHeld = hidKeysHeld();
 		

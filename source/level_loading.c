@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <stdbool.h>
 #include "level_loading.h"
@@ -9,6 +8,7 @@
 #include <stdio.h>
 #include "color_channels.h"
 #include "objects.h"
+#include "mp3_player.h"
 
 Object *objectArray = NULL;
 
@@ -1127,6 +1127,8 @@ void unload_level() {
         free(colorChannels);
         colorChannels = NULL;
     }
+
+    stop_mp3();
     
     objectArray = NULL;
 }
