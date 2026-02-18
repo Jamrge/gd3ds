@@ -2,9 +2,11 @@
 #include <citro2d.h>
 
 C2D_SpriteSheet ui_sheet;
+C2D_SpriteSheet bigFont_sheet;
 
 void ui_assets_init() {
     ui_sheet = C2D_SpriteSheetLoad("romfs:/gfx/ui.t3x");
+    bigFont_sheet = C2D_SpriteSheetLoad("romfs:/gfx/bigFont.t3x");
 }
 
 static void ui_image_update(UIElement* e, touchPosition* touch) {
@@ -17,7 +19,7 @@ static void ui_image_draw(UIElement* e) {
     if (!e->visible) return;
 
     C2D_SpriteSetCenter(&e->image.sprite, 0.5f, 0.5f);
-    C2D_SpriteSetPos(&e->image.sprite, e->x, e->y);
+    C2D_SpriteSetPos(&e->image.sprite, floorf(e->x) + 0.5f, floorf(e->y) + 0.5f);
     C2D_SpriteSetScale(&e->image.sprite, e->image.scaleX, e->image.scaleY);
     if (e->image.useTint) {
         C2D_DrawSpriteTinted(&e->image.sprite, &e->image.tint);

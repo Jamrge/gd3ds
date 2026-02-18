@@ -1,4 +1,5 @@
 #pragma once
+#include <citro2d.h>
 #include "color_channels.h"
 
 #define RGBA8(r, g, b, a) (a | (b << (u32)8) | (g << (u32)16) | (r << (u32)24))
