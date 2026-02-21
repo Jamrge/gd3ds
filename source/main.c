@@ -53,6 +53,8 @@ void no_dsp_firmware(void) {
 		gfxFlushBuffers();
 	}
 	
+	C2D_Fini();
+	C3D_Fini();
 	gfxExit();
 	romfsExit();
 	exit(22);
@@ -62,6 +64,10 @@ int main(int argc, char* argv[]) {
 	// Init libs
 	romfsInit();
 	gfxInitDefault();
+	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
+	C2D_Init(MAX_SPRITES);
+	C2D_Prepare();
+	osSetSpeedupEnable(1);
 	
 	if(ndspInit()) {
 		no_dsp_firmware();
@@ -70,10 +76,6 @@ int main(int argc, char* argv[]) {
 	u8 isNot2DS;
 	CFGU_GetModelNintendo2DS(&isNot2DS);
 	if (!isNot2DS && !is_citra()) gfxSetWide(true);
-	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
-	C2D_Init(MAX_SPRITES);
-	C2D_Prepare();
-	osSetSpeedupEnable(1);
 
     consoleInit(GFX_TOP, NULL);
 	ui_assets_init();

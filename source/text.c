@@ -49,7 +49,7 @@ float get_text_length(Charset font, const float zoom_x, const char *text, ...) {
     return text_length;
 }
 
-void draw_text(Charset font, C2D_SpriteSheet sheet, const float x, const float y, const float scale, float alignment, const u32 color, const char *text, ...) {
+void draw_text(Charset font, C2D_SpriteSheet sheet, const float x, const float y, const float scale, float alignment, const char *text, ...) {
     if (!text || !sheet) {
         return;
     }
@@ -87,14 +87,10 @@ void draw_text(Charset font, C2D_SpriteSheet sheet, const float x, const float y
                 // Draw glyph so its center is at (final_x, final_y)
                 C2D_SpriteFromSheet(&sprite, sheet, index);
                 C2D_SpriteSetCenter(&sprite, 0.5f, 0.5f);
-                C2D_SpriteSetPos(&sprite, final_x, final_y);
+                C2D_SpriteSetPos(&sprite, floorf(final_x), floorf(final_y));
                 C2D_SpriteSetScale(&sprite, scale, scale);
                 C2D_DrawSprite(&sprite);
             }
-
-            //draw_glyph(final_x - width * zoom_x / 2.0f, final_y - height * zoom_y / 2.0f,
-            //           tile_x, tile_y, width, height,
-            //           tex, rotation, zoom_x, zoom_y, color);
 
             offset += xadvance;
         }

@@ -14,11 +14,10 @@ UIAction actions[] = {
 
 void level_select_loop() {
 	UIScreen screen;
-	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
-	C3D_RenderTargetClear(top, C3D_CLEAR_ALL, 0, 0);
+	C3D_RenderTarget* bot = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
 
 	ui_load_screen(&screen, actions, sizeof(actions) / sizeof(actions[0]), "romfs:/menus/level_select.txt");
-	
+
 	while (aptMainLoop()) {
 		hidScanInput();
         
@@ -29,8 +28,9 @@ void level_select_loop() {
 		ui_screen_update(&screen, &touch);
 
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-		C3D_RenderTargetClear(top, C3D_CLEAR_ALL, RGBA8(3, 177, 255, 255), 0);
-        C2D_SceneBegin(top);
+		C2D_TargetClear(bot, C2D_Color32(3, 177, 255, 255));
+        C2D_SceneBegin(bot);
+
 		ui_screen_draw(&screen);
 		
 		C3D_FrameEnd(0);

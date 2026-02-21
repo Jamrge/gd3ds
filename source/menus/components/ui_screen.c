@@ -2,7 +2,9 @@
 #include "ui_element.h"
 #include "ui_button.h"
 #include "ui_image.h"
+#include "ui_label.h"
 #include "ui_screen.h"
+#include "ui_checkbox.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -79,6 +81,9 @@ static char* next_token(char** cursor)
     return start;
 }
 
+static bool get_bool(char *value) {
+    return *value == 't' || *value == 'T';
+}
 
 void ui_load_screen(UIScreen* screen,
                     const UIAction* actions,
@@ -90,7 +95,7 @@ void ui_load_screen(UIScreen* screen,
 
     screen->count = 0;
 
-    char line[256];
+    char line[512];
 
     while (fgets(line, sizeof(line), f)) {
 
@@ -104,14 +109,16 @@ void ui_load_screen(UIScreen* screen,
         if (!token) continue;
 
         char type[16];
-        strcpy(type, token);
+        strncpy(type, token, 15);
 
         // Defaults (optional values)
         int x = 0, y = 0, id = 0;
-        float sx = 1.0f, sy = 1.0f;
+        float sx = 1.0f, sy = 1.0f, scale = 1.0f;
         char actionName[64] = {0};
+        float align = 0.f;
+        bool checked = false;
 
-        char text[64] = {0};
+        char text[256] = {0};
 
         // Parse key=value pairs
         while ((token = next_token(&cursor)) != NULL) {
@@ -134,12 +141,26 @@ void ui_load_screen(UIScreen* screen,
                 sx = atof(value);
             else if (strcmp(key, "sy") == 0)
                 sy = atof(value);
+            else if (strcmp(key, "scale") == 0)
+                scale = atof(value);
             else if (strcmp(key, "action") == 0) {
                 strip_quotes(value);
                 strncpy(actionName, value, 63);
             } else if (strcmp(key, "text") == 0) {
                 strip_quotes(value);
-                strncpy(text, value, 63);
+                strncpy(text, value, 255);
+            } else if (strcmp(key, "align") == 0) {
+                if (strcmp(value, "LEFT") == 0) {
+                    align = 0.f;
+                } else if (strcmp(value, "CENTER") == 0) {
+                    align = 0.5f;
+                } else if (strcmp(value, "RIGHT") == 0) {
+                    align = 1.0f;
+                } else {
+                    align = 0.f;
+                }
+            } else if (strcmp(key, "checked") == 0) {
+                checked = get_bool(value);
             }
         }
 
@@ -154,12 +175,19 @@ void ui_load_screen(UIScreen* screen,
                     NULL,
                     text
                 );
-        }
-
-        else if (strcmp(type, "image") == 0) {
-
+        } else if (strcmp(type, "image") == 0) {
             screen->elements[screen->count++] =
                 ui_create_image(x, y, id, sx, sy);
+        } else if (strcmp(type, "label") == 0) {
+            screen->elements[screen->count++] =
+                ui_create_label(x, y, scale, text, align);
+        } else if (strcmp(type, "checkbox") == 0) {
+            screen->elements[screen->count++] =
+                ui_create_checkbox(
+                    x, y, checked,
+                    ui_find_action(actions, actionCount, actionName),
+                    NULL
+                );
         }
     }
 
