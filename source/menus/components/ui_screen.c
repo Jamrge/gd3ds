@@ -143,6 +143,29 @@ void ui_run_func_on_tag(UIScreen *screen, const char *tag, void (*func)(UIElemen
     }
 }
 
+// Run a function on each element with an specific tag
+void ui_set_pos_on_tag(UIScreen *screen, float x, float y, const char *tag) {
+    bool found_parent = false;
+    float movement_x = 0;
+    float movement_y = 0;
+    for (int i = 0; i < screen->count; i++) {
+        for (int j = 0; j < TAGS_PER_ELEMENT; j++) {
+            UIElement *e = &screen->elements[i];
+            // Check for element with this tag
+            if (strcmp(e->tag[j], tag) == 0) {
+                if (!found_parent) {
+                    found_parent = true;
+                    movement_x = x - e->x;
+                    movement_y = y - e->y;
+                }
+
+                e->x += movement_x;
+                e->y += movement_y;
+            }
+        }
+    }
+}
+
 void ui_enable_element(UIElement *e) { 
 	e->enabled = true;
 };

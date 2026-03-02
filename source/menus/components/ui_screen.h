@@ -28,6 +28,8 @@ void ui_screen_draw(UIScreen* screen);
 UIElement *ui_get_element_by_tag(UIScreen *screen, const char *tag);
 void ui_run_func_on_tag(UIScreen *screen, const char *tag, void (*func)(UIElement *e));
 
+void ui_set_pos_on_tag(UIScreen *screen, float x, float y, const char *tag);
+
 // Premade functions for on "ui_run_func_on_tag"
 
 void ui_enable_element(UIElement *e);

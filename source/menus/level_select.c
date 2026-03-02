@@ -112,11 +112,8 @@ void handle_card_movement() {
 			update_level_stars(0);
 
 			ui_run_func_on_tag(&screen, "level_card_2", disable_card_2);
-			if (scroll_dir < 0) {
-				ui_run_func_on_tag(&screen, "level_card", level_card_move_right);
-			} else {
-				ui_run_func_on_tag(&screen, "level_card", level_card_move_left);
-			}
+			ui_set_pos_on_tag(&screen, 160, 90, "level_card");
+			ui_set_pos_on_tag(&screen, 160, 90, "level_card_2");
 			
 			scroll_dir = 0;
 		}
