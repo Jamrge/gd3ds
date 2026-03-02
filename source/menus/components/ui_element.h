@@ -14,7 +14,8 @@ typedef enum {
     UI_CHECKBOX,
     UI_WINDOW,
     UI_TEXTBOX,
-    UI_LIST
+    UI_LIST,
+    UI_ACTION_AREA
 } UIElementType;
 
 typedef struct {
@@ -74,6 +75,11 @@ typedef struct {
 } UILabelData;
 
 typedef struct {
+    bool hovered;
+    bool pressed;
+} UIActionAreaData;
+
+typedef struct {
     touchPosition touchPosition;
     bool did_something;
     bool interacted;
@@ -99,7 +105,7 @@ typedef void (*UIActionFn)(void* userdata);
 struct UIElement {
     UIElementType type;
 
-    int x, y;
+    float x, y;
     int w, h;
 
     bool enabled;
@@ -115,6 +121,7 @@ struct UIElement {
         UIWindowData window;
         UITextbox textbox;
         UIList list;
+        UIActionAreaData action_area;
     };
 
     char tag[TAGS_PER_ELEMENT][TAG_LENGTH];

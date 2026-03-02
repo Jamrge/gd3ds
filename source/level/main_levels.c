@@ -43,4 +43,88 @@ MainLevelDefinition main_levels[] = {
         .difficulty = MAIN_DIFF_HARD,
         .stars = 6
     },
+    {
+        .level_name = "Jumper",
+        .gmd_path = "romfs:/main_levels/Jumper.gmd",
+        .song_path = "romfs:/songs/Jumper.mp3",
+        .difficulty = MAIN_DIFF_HARDER,
+        .stars = 7
+    },
+    {
+        .level_name = "Time Machine",
+        .gmd_path = "romfs:/main_levels/TimeMachine.gmd",
+        .song_path = "romfs:/songs/TimeMachine.mp3",
+        .difficulty = MAIN_DIFF_HARDER,
+        .stars = 8
+    },
+    {
+        .level_name = "Cycles",
+        .gmd_path = "romfs:/main_levels/Cycles.gmd",
+        .song_path = "romfs:/songs/Cycles.mp3",
+        .difficulty = MAIN_DIFF_HARDER,
+        .stars = 9
+    },
+    {
+        .level_name = "xStep",
+        .gmd_path = "romfs:/main_levels/xStep.gmd",
+        .song_path = "romfs:/songs/xStep.mp3",
+        .difficulty = MAIN_DIFF_INSANE,
+        .stars = 10
+    },
+    {
+        .level_name = "Clutterfunk",
+        .gmd_path = "romfs:/main_levels/Clutterfunk.gmd",
+        .song_path = "romfs:/songs/Clutterfunk.mp3",
+        .difficulty = MAIN_DIFF_INSANE,
+        .stars = 11
+    },
+    {
+        .level_name = "Theory of Everything",
+        .gmd_path = "romfs:/main_levels/TheoryofEverything.gmd",
+        .song_path = "romfs:/songs/TheoryOfEverything.mp3",
+        .difficulty = MAIN_DIFF_INSANE,
+        .stars = 12
+    },
+    {
+        .level_name = "Electroman Adventures",
+        .gmd_path = "romfs:/main_levels/Electroman.gmd",
+        .song_path = "romfs:/songs/Electroman.mp3",
+        .difficulty = MAIN_DIFF_INSANE,
+        .stars = 10
+    },
+    {
+        .level_name = "Clubstep",
+        .gmd_path = "romfs:/main_levels/Clubstep.gmd",
+        .song_path = "romfs:/songs/Clubstep.mp3",
+        .difficulty = MAIN_DIFF_DEMON,
+        .stars = 14
+    },
+    {
+        .level_name = "Electrodynamix",
+        .gmd_path = "romfs:/main_levels/Electrodynamix.gmd",
+        .song_path = "romfs:/songs/Electrodynamix.mp3",
+        .difficulty = MAIN_DIFF_INSANE,
+        .stars = 12
+    },
+    {
+        .level_name = "Hexagon Force",
+        .gmd_path = "romfs:/main_levels/HexagonForce.gmd",
+        .song_path = "romfs:/songs/HexagonForce.mp3",
+        .difficulty = MAIN_DIFF_INSANE,
+        .stars = 12
+    },
+    {
+        .level_name = "Blast Processing",
+        .gmd_path = "romfs:/main_levels/BlastProcessing.gmd",
+        .song_path = "romfs:/songs/BlastProcessing.mp3",
+        .difficulty = MAIN_DIFF_HARDER,
+        .stars = 10
+    },
+    {
+        .level_name = "Theory of Everything 2",
+        .gmd_path = "romfs:/main_levels/TheoryofEverything2.gmd",
+        .song_path = "romfs:/songs/TheoryOfEverything2.mp3",
+        .difficulty = MAIN_DIFF_DEMON,
+        .stars = 14
+    },
 };

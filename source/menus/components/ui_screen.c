@@ -9,6 +9,7 @@
 #include "ui_textbox.h"
 #include "ui_list.h"
 #include "ui_bg_gradient.h"
+#include "ui_action_area.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -336,6 +337,14 @@ void ui_load_screen(UIScreen* screen,
         } else if (strcmp(type, "bggradient") == 0) {
             screen->elements[screen->count++] =
                 ui_create_bg_gradient(
+                    tag
+                );
+        } else if (strcmp(type, "actionarea") == 0) {
+            screen->elements[screen->count++] =
+                ui_create_action_area(
+                    x, y, w, h,
+                    ui_find_action(actions, actionCount, actionName),
+                    NULL,
                     tag
                 );
         }

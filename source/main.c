@@ -12,6 +12,7 @@
 #include "graphics.h"
 #include "color_channels.h"
 #include "mp3_player.h"
+#include "level/main_levels.h"
 
 #include "menus/level_select.h"
 #include "menus/components/ui_screen.h"
@@ -21,6 +22,8 @@
 
 float cam_x = 0;
 float cam_y = 0;
+
+int game_state = STATE_LEVEL_SELECT;
 
 PrintConsole console;
 
@@ -60,59 +63,27 @@ void no_dsp_firmware(void) {
 	exit(22);
 }
 
-int main(int argc, char* argv[]) {
-	// Init libs
-	romfsInit();
-	gfxInitDefault();
-	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
-	C2D_Init(MAX_SPRITES);
-	C2D_Prepare();
-	osSetSpeedupEnable(1);
-	
-	C2D_SetTintMode(C2D_TintMult);
-	
-	if(ndspInit()) {
-		no_dsp_firmware();
-	}
-
-	u8 isNot2DS;
-	CFGU_GetModelNintendo2DS(&isNot2DS);
-	if (!isNot2DS && !is_citra()) gfxSetWide(true);
-
-    consoleInit(GFX_TOP, NULL);
-	ui_assets_init();
-	
-	level_select_loop();
-	
-	gfxInitDefault();
+void game_loop() {
 	consoleInit(GFX_BOTTOM, NULL);
 
 	// Create screens
 	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
 	C3D_RenderTargetClear(top, C3D_CLEAR_ALL, 0, 0);
-	
-	bgSheet = C2D_SpriteSheetLoad("romfs:/gfx/bg.t3x");
-	if (!bgSheet) svcBreak(USERBREAK_PANIC);
-	
-	groundSheet = C2D_SpriteSheetLoad("romfs:/gfx/grounds.t3x");
-	if (!groundSheet) svcBreak(USERBREAK_PANIC);
-	
-	// Load graphics
-	spriteSheet = C2D_SpriteSheetLoad("romfs:/gfx/sprites.t3x");
-	if (!spriteSheet) svcBreak(USERBREAK_PANIC);
-	
-	spriteSheet2 = C2D_SpriteSheetLoad("romfs:/gfx/portals.t3x");
-	if (!spriteSheet2) svcBreak(USERBREAK_PANIC);
 
-	int returned = load_level("romfs:/Electroman.gmd");
+	int returned = load_level(main_levels[curr_level_id].gmd_path);
 	if (returned) printf("\x1b[9;1HFailed %d", returned);
 
-	returned = play_mp3("romfs:/songs/Electroman.mp3");
+	returned = play_mp3(main_levels[curr_level_id].song_path);
 
 	printf("\x1b[8;1HUse dpad to move camera");
+	cam_x = 0;
+    cam_y = 0;
+	current_fading_effect = FADE_NONE;
+
+	gspWaitForVBlank();
+	GSPGPU_SetLcdForceBlack(0);
 	// Main loop
-	while (aptMainLoop())
-	{
+	while (aptMainLoop()) {
 		hidScanInput();
 
 		// Respond to user input
@@ -174,7 +145,65 @@ int main(int argc, char* argv[]) {
 		C3D_FrameEnd(0);
 	}
 
+	C3D_RenderTargetDelete(top);
+
 	unload_level();
+
+	game_state = STATE_LEVEL_SELECT;
+}
+
+int main(int argc, char* argv[]) {
+	// Init libs
+	romfsInit();
+	gfxInitDefault();
+	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
+	C2D_Init(MAX_SPRITES);
+	C2D_Prepare();
+	osSetSpeedupEnable(1);
+	
+	C2D_SetTintMode(C2D_TintMult);
+	
+	if(ndspInit()) {
+		no_dsp_firmware();
+	}
+
+	u8 isNot2DS;
+	CFGU_GetModelNintendo2DS(&isNot2DS);
+	if (!isNot2DS && !is_citra()) gfxSetWide(true);	
+ 
+	ui_assets_init();
+	
+	bgSheet = C2D_SpriteSheetLoad("romfs:/gfx/bg.t3x");
+	if (!bgSheet) svcBreak(USERBREAK_PANIC);
+	
+	groundSheet = C2D_SpriteSheetLoad("romfs:/gfx/grounds.t3x");
+	if (!groundSheet) svcBreak(USERBREAK_PANIC);
+	
+	// Load graphics
+	spriteSheet = C2D_SpriteSheetLoad("romfs:/gfx/sprites.t3x");
+	if (!spriteSheet) svcBreak(USERBREAK_PANIC);
+	
+	spriteSheet2 = C2D_SpriteSheetLoad("romfs:/gfx/portals.t3x");
+	if (!spriteSheet2) svcBreak(USERBREAK_PANIC);
+
+	bool exit = false;
+	while (aptMainLoop() && !exit) {
+		gspWaitForVBlank();
+		GSPGPU_SetLcdForceBlack(1);
+		gfxSetScreenFormat(GFX_TOP, GSP_BGR8_OES);
+		gfxSetScreenFormat(GFX_BOTTOM, GSP_BGR8_OES);
+		switch (game_state) {
+			case STATE_LEVEL_SELECT:
+				level_select_loop();
+				break;
+			case STATE_GAME:
+				game_loop();
+				break;
+			case STATE_EXIT:
+				exit = true;
+				break;
+		}
+	}
 
 	// Delete graphics
 	C2D_SpriteSheetFree(spriteSheet);

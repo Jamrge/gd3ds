@@ -1,5 +1,5 @@
 #pragma once
-
+#include <3ds.h>
 #include <stdbool.h>
 #include "level_loading.h"
 void upload_to_buffer(Object *obj, int channel);
@@ -67,10 +67,15 @@ extern Color p2_color;
 #define TRIGGER_FADE_LEFT_SEMICIRCLE 56
 #define TRIGGER_FADE_RIGHT_SEMICIRCLE 57
 
+#define GET_R(color) (color & 0xff)
+#define GET_G(color) ((color >> 8) & 0xff)
+#define GET_B(color) ((color >> 16) & 0xff)
 
 void calculate_lbg();
 void init_col_channels();
+void handle_col_channel(int chan);
 void handle_col_triggers();
 void handle_triggers();
+void upload_color_to_buffer(int channel, u32 color, float seconds);
 void upload_to_buffer(Object *obj, int channel);
 int convert_one_point_nine_channel(int channel);

@@ -1080,12 +1080,10 @@ void set_color_channels() {
 
                     channels[id].blending = colorChannel.blending;
 
-                    
                     channels[id].color = color;
 
                     if (colorChannel.playerColor == 1) channels[id].color = p1_color;
-                    if (colorChannel.playerColor == 2) channels[id].color = p2_color;
-                    
+                    if (colorChannel.playerColor == 2) channels[id].color = p2_color; 
                 }
         }
     }
@@ -1109,6 +1107,7 @@ int load_level(char *path) {
 
         objectArray = parse_string(data);
         free(data);
+        free(metaStr);
         if (!objectArray) return 2;
     }
     free(level);
@@ -1123,6 +1122,7 @@ void unload_level() {
     free(objectArray);
     free_sections();
     
+    channelCount = 0;
     if (colorChannels) {
         free(colorChannels);
         colorChannels = NULL;

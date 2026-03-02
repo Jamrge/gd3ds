@@ -75,6 +75,9 @@ void audio_init() {
 void audio_exit() {
     ndspChnReset(MUSIC_CHANNEL);
     linearFree(audioBuffer);
+    mpg123_close(mh);
+	mpg123_delete(mh);
+	mpg123_exit();
 }
 
 bool mp3_init(void *file) {
@@ -90,7 +93,6 @@ bool mp3_init(void *file) {
         printf("Couldn't open or get format\n");
         return 0;
     }
-
 
 	buffSize = MP3_BUF_SIZE * channels_mp3();
 
@@ -160,8 +162,8 @@ int play_mp3(char *path) {
     priority = priority > 0x3F ? 0x3F : priority;
 
     threadId = threadCreate(audio_thread, path,
-                                         THREAD_STACK_SZ, priority,
-                                         THREAD_AFFINITY, true);
+                                          THREAD_STACK_SZ, priority,
+                                          THREAD_AFFINITY, true);
 
     printf("musica play on thread %p\n", threadId);
 

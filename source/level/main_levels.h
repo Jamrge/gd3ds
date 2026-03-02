@@ -1,6 +1,6 @@
 #include <3ds.h>
 
-#define MAIN_LEVELS_NUM 6
+#define MAIN_LEVELS_NUM 18
 
 enum MainLevelDifficulties {
     MAIN_DIFF_EASY,
@@ -19,3 +19,5 @@ typedef struct {
     int difficulty;
     int stars;
 } MainLevelDefinition;
+
+extern MainLevelDefinition main_levels[];

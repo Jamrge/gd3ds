@@ -48,6 +48,7 @@ void init_col_channels() {
         channels[chan].color.g = 255;
         channels[chan].color.b = 255;
         channels[chan].blending = false;
+        col_trigger_buffer[chan].active = false;
     }
 
     channels[CHANNEL_BG].color.r = 0;
@@ -83,32 +84,37 @@ void init_col_channels() {
     channels[CHANNEL_LBG].blending = true;
 }
 
-void handle_col_triggers() {
-    for (int chan = 0; chan < COL_CHANNEL_NUM; chan++) {
-        ColTriggerBuffer *buffer = &col_trigger_buffer[chan];
+void handle_col_channel(int chan) {
+    ColTriggerBuffer *buffer = &col_trigger_buffer[chan];
 
-        if (buffer->active) {
-            Color lerped_color;
-            Color color_to_lerp = buffer->new_color;
+    if (buffer->active) {
+        Color lerped_color;
+        Color color_to_lerp = buffer->new_color;
 
-            if (buffer->seconds > 0) {
-                float multiplier = buffer->time_run / buffer->seconds;
-                lerped_color = color_lerp(buffer->old_color, color_to_lerp, multiplier);
-            } else {
-                lerped_color = color_to_lerp;
-            }
+        if (buffer->seconds > 0) {
+            float multiplier = buffer->time_run / buffer->seconds;
+            lerped_color = color_lerp(buffer->old_color, color_to_lerp, multiplier);
+        } else {
+            lerped_color = color_to_lerp;
+        }
 
-            channels[chan].color = lerped_color;
+        channels[chan].color = lerped_color;
 
-            buffer->time_run += 1/60.f;
+        buffer->time_run += 1/60.f;
 
-            if (buffer->time_run > buffer->seconds) {
-                buffer->active = false;
-                channels[chan].color = color_to_lerp;
-            }
+        if (buffer->time_run > buffer->seconds) {
+            buffer->active = false;
+            channels[chan].color = color_to_lerp;
         }
     }
 }
+
+void handle_col_triggers() {
+    for (int chan = 1; chan < COL_CHANNEL_NUM; chan++) {
+        handle_col_channel(chan);
+    }
+}
+
 
 void upload_to_buffer(Object *obj, int channel) {
     if (channel == 0) channel = 1;
@@ -141,6 +147,17 @@ void upload_to_buffer(Object *obj, int channel) {
     }
     
     buffer->seconds = obj->trig_duration;
+    buffer->time_run = 0;
+    buffer->active = true;
+}
+
+void upload_color_to_buffer(int channel, u32 color, float seconds) {
+    ColTriggerBuffer *buffer = &col_trigger_buffer[channel];
+    buffer->old_color = channels[channel].color;
+    buffer->new_color.r = GET_R(color);
+    buffer->new_color.g = GET_G(color);
+    buffer->new_color.b = GET_B(color);
+    buffer->seconds = seconds;
     buffer->time_run = 0;
     buffer->active = true;
 }

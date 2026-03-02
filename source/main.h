@@ -7,5 +7,13 @@
 #define SCREEN_WIDTH  400
 #define SCREEN_HEIGHT 240
 
+enum GameState {
+    STATE_LEVEL_SELECT,
+    STATE_GAME,
+    STATE_EXIT
+};
+
+extern int game_state;
+
 extern float cam_x;
 extern float cam_y;

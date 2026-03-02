@@ -1,12 +1,20 @@
 bggradient tag="gradient"
 image x=160 y=13 id=198 sx=0.75 sy=0.75
 button x=20 y=20 id=6 action="none"
-button x=20 y=120 id=376 action="none" sx=-1.0
-button x=300 y=120 id=376 action="none"
 
 # level thingy
 
 window x=160 y=90 w=220 h=80 style=2 tag="level_card,card_window"
-label x=160 y=90 text="TEST" align=CENTER tag="level_card,level_title"
+label x=160 y=90 text="" align=CENTER tag="level_card,level_title"
 image x=260 y=60 id=408 tag="level_card"
-label x=250 y=60 text="42069" align=RIGHT scale=0.40 tag="level_card,level_title"
+label x=250 y=60 text="" align=RIGHT scale=0.40 tag="level_card,level_stars"
+
+window x=160 y=90 w=220 h=80 style=2 tag="level_card_2,card_window_2"
+label x=160 y=90 text="" align=CENTER tag="level_card_2,level_title_2"
+image x=260 y=60 id=408 tag="level_card_2"
+label x=250 y=60 text="" align=RIGHT scale=0.40 tag="level_card_2,level_stars_2"
+
+actionarea x=160 y=90 w=220 h=80 action="open_level"
+
+button x=20 y=120 id=376 action="move_left" sx=-1.0
+button x=300 y=120 id=376 action="move_right"
