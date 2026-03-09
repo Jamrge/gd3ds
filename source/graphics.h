@@ -60,6 +60,9 @@ enum FadingEffects {
     FADE_COUNT
 };
 
+void cache_all_sprites();
+void free_cached_sprites();
+
 extern int current_fading_effect;
 
 extern int sprite_count;

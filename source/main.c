@@ -206,9 +206,10 @@ int main(int argc, char* argv[]) {
 	spriteSheet2 = C2D_SpriteSheetLoad("romfs:/gfx/portals.t3x");
 	if (!spriteSheet2) svcBreak(USERBREAK_PANIC);
 
+	cache_all_sprites();
+
 	top = C2D_CreateScreenTargetExt(GFX_TOP, GFX_LEFT, aaEnabled);
 	bot = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
-
 
 	bool exit = false;
 	while (aptMainLoop() && !exit) {
@@ -227,6 +228,8 @@ int main(int argc, char* argv[]) {
 				break;
 		}
 	}
+
+	free_cached_sprites();
 
 	// Delete graphics
 	C2D_SpriteSheetFree(spriteSheet);

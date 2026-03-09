@@ -3,6 +3,7 @@
 #include "main.h"
 #include "math_helpers.h"
 #include "color_channels.h"
+#include <stdlib.h>
 
 bool aaEnabled = false;
 bool wideEnabled = false;
@@ -22,6 +23,64 @@ static SpriteObject *viewable_objects_ptr[MAX_SPRITES];
 
 int current_fading_effect = FADE_NONE;
 
+typedef struct {
+    C2D_Sprite parent_template;
+    int child_count;
+    C2D_Sprite *child_templates;
+} SpriteTemplate;
+
+SpriteTemplate sprite_templates[GAME_OBJECT_COUNT]; // global cache
+
+static C2D_SpriteSheet *get_sprite_sheet(int index, int *rel_index) {
+	if (index < SPRITESHEET2_START) {
+		*rel_index = index;
+		return &spriteSheet;
+	}
+
+	*rel_index = index - SPRITESHEET2_START;
+	return &spriteSheet2;
+}
+
+void cache_all_sprites() {
+    for (int id = 0; id < GAME_OBJECT_COUNT; id++) {
+        const GameObject* obj = &game_objects[id];
+
+        // Skip if object has no texture
+        if (obj->texture < 0) continue;
+
+        int tex;
+        C2D_SpriteSheet *sheet = get_sprite_sheet(obj->texture, &tex);
+
+        C2D_SpriteFromSheet(&sprite_templates[id].parent_template, *sheet, tex);
+        C2D_SpriteSetCenter(&sprite_templates[id].parent_template, 0.5f, 0.5f);
+
+        // Children
+        sprite_templates[id].child_count = obj->child_count;
+        if (obj->child_count > 0) {
+            sprite_templates[id].child_templates = malloc(sizeof(C2D_Sprite) * obj->child_count);
+            for (int i = 0; i < obj->child_count; i++) {
+                const ChildSprite* c = &obj->children[i];
+                if (c->texture < 0) continue;
+
+                int c_tex;
+                C2D_SpriteSheet *c_sheet = get_sprite_sheet(c->texture, &c_tex);
+
+                C2D_SpriteFromSheet(&sprite_templates[id].child_templates[i], *c_sheet, c_tex);
+                C2D_SpriteSetCenter(&sprite_templates[id].child_templates[i], 0.5f, 0.5f);
+            }
+        } else {
+            sprite_templates[id].child_templates = NULL;
+        }
+    }
+}
+
+void free_cached_sprites() {
+	for (int i = 0; i < GAME_OBJECT_COUNT; i++) {
+		if (sprite_templates[i].child_templates)
+			free(sprite_templates[i].child_templates);
+	}
+}
+
 static inline float normalize_angle(float a)
 {
     while (a < 0.0f)   a += 360.0f;
@@ -40,31 +99,6 @@ float mirror_angle(float angle, bool hflip, bool vflip)
     }
 
     return normalize_angle(angle);
-}
-
-static C2D_SpriteSheet *get_sprite_sheet(int index, int *rel_index) {
-	if (index < SPRITESHEET2_START) {
-		*rel_index = index;
-		return &spriteSheet;
-	}
-
-	*rel_index = index - SPRITESHEET2_START;
-	return &spriteSheet2;
-}
-
-static inline void spawn_sprite_c2d(
-    C2D_Sprite *out,
-    C2D_SpriteSheet *sheet,
-    int texture,
-    float x, float y,
-    float scale_x, float scale_y,
-    float rotation
-) {
-    C2D_SpriteFromSheet(out, *sheet, texture);
-    C2D_SpriteSetCenter(out, 0.5f, 0.5f);
-    C2D_SpriteSetPos(out, (int)x, (int)y);
-    C2D_SpriteSetScale(out, scale_x, scale_y);
-    C2D_SpriteSetRotation(out, rotation);
 }
 
 inline int get_color_channel(int col_type, int obj, const GameObject *game_obj) {
@@ -149,19 +183,11 @@ void spawn_object_at(
 		float p_x = x + rot_x * scale;
 		float p_y = y + rot_y * scale;
 
-		int texture;
-		C2D_SpriteSheet *sheet = get_sprite_sheet(obj->texture, &texture);
+		vo->spr = sprite_templates[id].parent_template;
 
-		spawn_sprite_c2d(
-			&vo->spr,
-			sheet,
-			texture,
-			p_x,
-			p_y,
-			sx, 
-			sy,
-			rad
-		);
+		C2D_SpriteSetPos(&vo->spr, p_x, p_y);
+		C2D_SpriteSetScale(&vo->spr, sx, sy);
+		C2D_SpriteSetRotation(&vo->spr, rad);
 
 		vo->obj = obj_game;
 		vo->layer = 0;
@@ -171,10 +197,9 @@ void spawn_object_at(
 		viewable_objects_ptr[sprite_count] = vo;
 		sprite_count++;
 	}
-
     // Render children
     for (int i = 0; i < obj->child_count; i++) {
-        const ChildSprite* c = &obj->children[i];
+		const ChildSprite* c = &obj->children[i];
 		
 		if (sprite_count >= MAX_SPRITES - 1) return;
 		
@@ -194,19 +219,12 @@ void spawn_object_at(
             int c_flip_x_mult = (c->flip_x ? -1 : 1);
             int c_flip_y_mult = (c->flip_y ? -1 : 1);
 				
-			int texture;
-			C2D_SpriteSheet *sheet = get_sprite_sheet(c->texture, &texture);
+			vo->spr = sprite_templates[id].child_templates[i]; 
 
-			spawn_sprite_c2d(
-				&vo->spr,
-				sheet,
-				texture,
-				c_x,
-				c_y,
-				c->scale_x * c_flip_x_mult * sx,
-				c->scale_y * c_flip_y_mult * sy,
-				C3D_AngleFromDegrees(c->rot) + rad
-			);
+			C2D_SpriteSetPos(&vo->spr, c_x, c_y);
+			C2D_SpriteSetScale(&vo->spr, c->scale_x * c_flip_x_mult * sx,
+										  c->scale_y * c_flip_y_mult * sy);
+			C2D_SpriteSetRotation(&vo->spr, C3D_AngleFromDegrees(c->rot) + rad);
 
 			vo->obj = obj_game;
 			vo->layer = i + 1;
