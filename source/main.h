@@ -4,6 +4,8 @@
 
 #define CAM_SPEED 5.19300155f
 
+#define DT (1.f/60)
+
 #define SCREEN_WIDTH  400
 #define SCREEN_HEIGHT 240
 

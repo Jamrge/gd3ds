@@ -177,13 +177,13 @@ bool handle_fading() {
     if (!fade_status) return false;
 
     if (fade_status == FADE_STATUS_OUT) {
-        opacity += FADE_SPEED * (1.f/60);
+        opacity += FADE_SPEED * DT;
         if (opacity >= 255) {
             opacity = 255;
             fade_status = FADE_STATUS_NONE;
         }
     } else if (fade_status == FADE_STATUS_IN) {
-        opacity -= FADE_SPEED * (1.f/60);
+        opacity -= FADE_SPEED * DT;
         if (opacity <= 0) {
             opacity = 0;
             fade_status = FADE_STATUS_NONE;

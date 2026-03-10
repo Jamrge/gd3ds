@@ -105,7 +105,7 @@ void handle_col_channel(int chan) {
 
         channels[chan].color = lerped_color;
 
-        buffer->time_run += 1/60.f;
+        buffer->time_run += DT;
 
         if (buffer->time_run > buffer->seconds) {
             buffer->active = false;

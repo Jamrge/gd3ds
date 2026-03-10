@@ -801,11 +801,14 @@ int parse_gd_object(const char *objStr, int obj) {
         if (!objects.detail_col_channel[obj]) objects.detail_col_channel[obj] = 1;
     }
 
+    objects.random[obj] = rand();
+
     free_string_array(tokens, count);
     return 1;
 }
 
 void free_arrays() {
+    if (objects.random)             { free(objects.random);             objects.random = NULL; }
     if (objects.id)                 { free(objects.id);                 objects.id = NULL; }
     if (objects.x)                  { free(objects.x);                  objects.x = NULL; }
     if (objects.y)                  { free(objects.y);                  objects.y = NULL; }
@@ -832,6 +835,9 @@ void free_arrays() {
 }
 
 bool init_arrays(int count) {
+    objects.random = malloc(sizeof(int) * count);
+    if (!objects.random) return false;
+
     objects.id = malloc(sizeof(int) * count);
     if (!objects.id) return false;
     
@@ -901,6 +907,7 @@ bool init_arrays(int count) {
     objects.activated = malloc(sizeof(bool) * count);
     if (!objects.activated) return false;
 
+    memset(objects.random,             0, sizeof(int) * count);
     memset(objects.id,                 0, sizeof(int) * count);
     memset(objects.x,                  0, sizeof(float) * count);
     memset(objects.y,                  0, sizeof(float) * count);

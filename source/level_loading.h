@@ -21,6 +21,8 @@ typedef union {
 } GDValue;
 
 typedef struct {
+    int *random;
+
     int *id;
     float *x, *y;
     float *rotation;

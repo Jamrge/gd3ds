@@ -180,6 +180,83 @@ int get_glow_channel(int id) {
 	return CHANNEL_OBJ_BLENDING;
 }
 
+const int obj_9_random_layers[4] = {
+	744,
+	748,
+	749,
+	744
+};
+
+const int obj_135_random_layers[4] = {
+	769,
+	770,
+	771,
+	772
+};
+
+int get_obj_random_layer(int obj, int id) {
+	switch (id) {
+		case 9:
+			return obj_9_random_layers[objects.random[obj] & 0b11];
+		case 135:
+			return obj_135_random_layers[objects.random[obj] & 0b11];
+	}
+	return -1;
+}
+
+float get_rotation_speed(int id) {
+    switch (id) {
+        case 88: 
+        case 89:
+        case 98:
+        case 183:
+        case 184:
+        case 185:
+        case 186:
+        case 187:
+        case 188:
+        case 397:
+        case 398:
+        case 399:
+        case 675:
+        case 676:
+        case 677:
+        case 678:
+        case 679:
+        case 680:
+        case 740:
+        case 741:
+        case 742:
+            return 360.f;
+        
+        case 85:
+        case 86:
+        case 87:
+        case 97:
+        case 137:
+        case 138:
+        case 139:
+        case 154:
+        case 155:
+        case 156:
+        case 180:
+        case 181:
+        case 182:
+        case 222:
+        case 223:
+        case 224:
+        case 375:
+        case 376:
+        case 377:
+        case 378:
+        case 394:
+        case 395:
+        case 396:
+            return 180.f;
+    }
+    return 0.f;
+}
+
 void spawn_object_at(
 	int obj_game,
     int id,
@@ -222,7 +299,15 @@ void spawn_object_at(
 		float p_x = x + rot_x * scale;
 		float p_y = y + rot_y * scale;
 
-		vo->spr = sprite_templates[id].parent_template;
+		int random_layer = get_obj_random_layer(obj_game, id);
+		if (random_layer < 0) {
+			vo->spr = sprite_templates[id].parent_template;
+		} else {
+			C2D_Sprite rnd = { 0 };
+			vo->spr = rnd;
+			C2D_SpriteFromSheet(&vo->spr, spriteSheet, random_layer);
+			C2D_SpriteSetCenter(&vo->spr, 0.5f, 0.5f);
+		}
 
 		C2D_SpriteSetPos(&vo->spr, (int)p_x, (int)p_y);
 		C2D_SpriteSetScale(&vo->spr, sx, sy);
@@ -677,6 +762,8 @@ void draw_objects() {
 			float fade_scale = 1.f;
 
 			get_fade_vars(obj, calc_x, &fade_x, &fade_y, &fade_scale);
+
+			objects.rotation[obj] += (((objects.random[obj] & 1) ? -get_rotation_speed(objects.id[obj]) : get_rotation_speed(objects.id[obj]))) * DT;
 			
 			// Handle special fade types
 			if (objects.transition_applied[obj] == FADE_DOWN_STATIONARY || objects.transition_applied[obj] == FADE_UP_STATIONARY) {

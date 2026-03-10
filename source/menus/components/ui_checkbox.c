@@ -8,6 +8,8 @@
 #include "ui_checkbox.h"
 #include "ui_screen.h"
 
+#include "main.h"
+
 static void set_checkbox_texture(UIElement* e, bool enabled) {
     int tex = enabled ? 28 : 27;
     C2D_SpriteFromSheet(&e->checkbox.image.sprite, ui_sheet, tex);
@@ -46,10 +48,10 @@ static void ui_checkbox_update(UIElement* e, UIInput* touch) {
     EaseTypes bounce_type;
     // Animation
     if (e->checkbox.hovered) {
-        e->checkbox.hoverTimer += 1 / 60.f;
+        e->checkbox.hoverTimer += DT;
         bounce_type = BOUNCE_OUT;
     } else {
-        e->checkbox.hoverTimer -= 1 / 60.f;
+        e->checkbox.hoverTimer -= DT;
         // As the animation plays in reverse, we just use bounce in
         bounce_type = BOUNCE_IN;
     }

@@ -218,6 +218,8 @@ int main(int argc, char* argv[]) {
 
 	cache_all_sprites();
 
+	srand(time(NULL));
+
 	top = C2D_CreateScreenTargetExt(GFX_TOP, GFX_LEFT, aaEnabled);
 	bot = C2D_CreateScreenTargetExt(GFX_BOTTOM, GFX_LEFT, aaEnabled);
 

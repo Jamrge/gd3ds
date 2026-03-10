@@ -8,6 +8,8 @@
 #include "math_helpers.h"
 #include "ui_screen.h"
 
+#include "main.h"
+
 static void ui_button_update(UIElement* e, UIInput* touch) {
     bool pressedTouch = hidKeysDown() & KEY_TOUCH;
     bool releasedTouch = hidKeysUp() & KEY_TOUCH;
@@ -29,10 +31,10 @@ static void ui_button_update(UIElement* e, UIInput* touch) {
     EaseTypes bounce_type;
     // Animation
     if (e->button.hovered) {
-        e->button.hoverTimer += 1 / 60.f;
+        e->button.hoverTimer += DT;
         bounce_type = BOUNCE_OUT;
     } else {
-        e->button.hoverTimer -= 1 / 60.f;
+        e->button.hoverTimer -= DT;
         // As the animation plays in reverse, we just use bounce in
         bounce_type = BOUNCE_IN;
     }
