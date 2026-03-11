@@ -144,13 +144,13 @@ float calculate_amplitude(float power) {
 
     if (abs_rms_delta > rms_thresh && rms_delta > 0.0f) {
         // Note changed, do pulse
-        pulse = 1.0f;
+        pulse = AMP_MAX;
     }
 
     pulse *= AMP_I_DECAY;
 
-    if (pulse > 1.0f) pulse = 1.0f;
-    if (pulse < 0.1f) pulse = 0.1f;
+    if (pulse > AMP_MAX) pulse = AMP_MAX;
+    if (pulse < AMP_MIN) pulse = AMP_MIN;
 
     prev = power;
     prev_power = power;
@@ -233,6 +233,11 @@ void audio_thread(void *const file) {
         }
 
         LightEvent_Wait(&soundEvent);
+    }
+
+    while (amplitude > AMP_MIN && !quit) {
+        amplitude = calculate_amplitude(0);
+        svcSleepThread((long) 1.666666666666e+7);
     }
 }
 
