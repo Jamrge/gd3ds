@@ -86,6 +86,7 @@ void draw_text(Charset font, C2D_SpriteSheet sheet, const float x, const float y
             if (index >= 0) { 
                 // Draw glyph so its center is at (final_x, final_y)
                 C2D_SpriteFromSheet(&sprite, sheet, index);
+                C3D_TexSetFilter(sprite.image.tex, GPU_LINEAR, GPU_LINEAR);
                 C2D_SpriteSetPos(&sprite, final_x, final_y);
                 C2D_SpriteSetScale(&sprite, scale, scale);
                 C2D_DrawSprite(&sprite);

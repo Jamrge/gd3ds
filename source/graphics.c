@@ -50,11 +50,13 @@ void cache_all_sprites() {
         C2D_SpriteSheet *sheet = get_sprite_sheet(obj->texture, &tex);
 
         C2D_SpriteFromSheet(&sprite_templates[id].parent_template, *sheet, tex);
+		C3D_TexSetFilter(sprite_templates[id].parent_template.image.tex, GPU_LINEAR, GPU_LINEAR);
         C2D_SpriteSetCenter(&sprite_templates[id].parent_template, 0.5f, 0.5f);
 
 		// Get glow frame
 		if (obj->glow_frame >= 0) {
 			C2D_SpriteFromSheet(&sprite_templates[id].glow_template, glowSheet, obj->glow_frame);
+			C3D_TexSetFilter(sprite_templates[id].glow_template.image.tex, GPU_LINEAR, GPU_LINEAR);
 			C2D_SpriteSetCenter(&sprite_templates[id].glow_template, 0.5f, 0.5f);
 		}
 
@@ -70,6 +72,7 @@ void cache_all_sprites() {
                 C2D_SpriteSheet *c_sheet = get_sprite_sheet(c->texture, &c_tex);
 
                 C2D_SpriteFromSheet(&sprite_templates[id].child_templates[i], *c_sheet, c_tex);
+				C3D_TexSetFilter(sprite_templates[id].child_templates[i].image.tex, GPU_LINEAR, GPU_LINEAR);
                 C2D_SpriteSetCenter(&sprite_templates[id].child_templates[i], 0.5f, 0.5f);
             }
         } else {
@@ -176,17 +179,17 @@ int get_glow_channel(int id) {
 }
 
 const int obj_9_random_layers[4] = {
-	744,
-	748,
-	749,
-	744
+	585,
+	589,
+	590,
+	589
 };
 
 const int obj_135_random_layers[4] = {
-	769,
-	770,
-	771,
-	772
+	610,
+	611,
+	612,
+	613
 };
 
 int get_obj_random_layer(int obj, int id) {
@@ -288,7 +291,7 @@ float get_object_pulse(float amplitude, int id, int layer) {
         case 497:
             return map_range(amplitude, 0.f, 1.f, 0.6f, 1.2f);
     }
-    return 1.f;
+    return 1.0f;
 }
 
 void spawn_object_at(
@@ -345,7 +348,7 @@ void spawn_object_at(
 
 		float pulse_scale = get_object_pulse(amplitude, id, 0);
 
-		C2D_SpriteSetPos(&vo->spr, (int)p_x, (int)p_y);
+		C2D_SpriteSetPos(&vo->spr, p_x, p_y);
 		C2D_SpriteSetScale(&vo->spr, sx * pulse_scale, sy * pulse_scale);
 		C2D_SpriteSetRotation(&vo->spr, rad);
 
@@ -366,7 +369,7 @@ void spawn_object_at(
 
 		float pulse_scale = get_object_pulse(amplitude, id, 1);
 
-		C2D_SpriteSetPos(&vo->spr, (int)x, (int)y);
+		C2D_SpriteSetPos(&vo->spr, x, y);
 		C2D_SpriteSetScale(&vo->spr, sx * pulse_scale, sy * pulse_scale);
 		C2D_SpriteSetRotation(&vo->spr, rad);
 
@@ -405,7 +408,7 @@ void spawn_object_at(
 
 			float pulse_scale = get_object_pulse(amplitude, id, i + 2);
 
-			C2D_SpriteSetPos(&vo->spr, (int)c_x, (int)c_y);
+			C2D_SpriteSetPos(&vo->spr, c_x, c_y);
 			C2D_SpriteSetScale(&vo->spr, c->scale_x * c_flip_x_mult * sx * pulse_scale,
 										  c->scale_y * c_flip_y_mult * sy * pulse_scale);
 			C2D_SpriteSetRotation(&vo->spr, C3D_AngleFromDegrees(c->rot) + rad);

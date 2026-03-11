@@ -1010,9 +1010,9 @@ void set_color_channels() {
 }
 
 const int rod_images[3] = {
-	833,
-	834,
-	835
+	634,
+	635,
+	636
 };
 
 int load_level(char *path) {

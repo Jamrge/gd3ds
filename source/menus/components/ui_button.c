@@ -113,6 +113,7 @@ UIElement ui_create_button(
     strncpy(e.button.text, text, 63);
 
     C2D_SpriteFromSheet(&e.button.image.sprite, *get_sheet(sheet), sprite_index);
+    C3D_TexSetFilter(e.button.image.sprite.image.tex, GPU_LINEAR, GPU_LINEAR);
     
     e.button.hoverScale = 1.f;
     e.w = fabsf(e.button.image.sprite.image.subtex->width  * sx);

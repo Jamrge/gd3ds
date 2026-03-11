@@ -13,6 +13,7 @@
 static void set_checkbox_texture(UIElement* e, bool enabled) {
     int tex = enabled ? 28 : 27;
     C2D_SpriteFromSheet(&e->checkbox.image.sprite, ui_sheet, tex);
+    C3D_TexSetFilter(e->checkbox.image.sprite.image.tex, GPU_LINEAR, GPU_LINEAR);
 
     e->w = fabsf(e->checkbox.image.sprite.image.subtex->width * e->checkbox.scaleX);
     e->h = fabsf(e->checkbox.image.sprite.image.subtex->height * e->checkbox.scaleY);
