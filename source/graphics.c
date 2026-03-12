@@ -411,7 +411,7 @@ void spawn_object_at(
 			C2D_SpriteSetPos(&vo->spr, c_x, c_y);
 			C2D_SpriteSetScale(&vo->spr, c->scale_x * c_flip_x_mult * sx * pulse_scale,
 										  c->scale_y * c_flip_y_mult * sy * pulse_scale);
-			C2D_SpriteSetRotation(&vo->spr, C3D_AngleFromDegrees(c->rot) + rad);
+			if (id < 15 || id > 17) C2D_SpriteSetRotation(&vo->spr, C3D_AngleFromDegrees(c->rot) + rad);
 
 			vo->obj = obj_game;
 			vo->layer = i + 2;
@@ -427,7 +427,8 @@ void spawn_object_at(
 static inline uint32_t make_sort_key(const SpriteObject *s)
 {
     const int obj = s->obj;
-    const GameObject *game_obj = &game_objects[objects.id[obj]];
+	const int id = objects.id[obj];
+    const GameObject *game_obj = &game_objects[id];
 
     int zlayer = objects.zlayer[obj] ? objects.zlayer[obj] : game_obj->z_layer;
 
@@ -457,6 +458,10 @@ static inline uint32_t make_sort_key(const SpriteObject *s)
 	
 	int zorder = objects.zorder[obj] ? objects.zorder[obj] : game_obj->z_order;
 
+	// Move the pulserod ball
+	if (id >= 15 && id <= 17 && s->layer == 2) {
+		zlayer += 2;
+	} 
 
     uint32_t zl = (uint32_t)(zlayer + 8);     // fits in 7 bits
     uint32_t zs = (uint32_t)(sheet);          // fits in 1 bit
