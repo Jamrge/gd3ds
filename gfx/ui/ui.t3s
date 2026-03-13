@@ -1,4 +1,4 @@
---atlas -f rgba8888 -z auto
+--atlas --border edge -f rgba8888 -z auto
 GJLargeLock_001.png
 GJ_BPMOffBtn_001.png
 GJ_BPMOnBtn_001.png
