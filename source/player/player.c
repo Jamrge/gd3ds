@@ -419,7 +419,29 @@ void draw_player(Player *player) {
     MotionTrail_Draw(&trail);
     MotionTrail_DrawWaveTrail(&wave_trail);*/
 
+
     float scale = (player->mini) ? 0.6f : 1.f;
+
+    float rad = C3D_AngleFromDegrees(player->rotation);
+    float cos_r = cosf(rad);
+    float sin_r = sinf(rad);
+
+    int flip_x_mult = (state.mirror_mult);
+    int flip_y_mult = (player->upside_down ? -1 : 1);
+
+    float m00 = cos_r;
+    float m01 = sin_r;
+    float m10 = sin_r;
+    float m11 = -cos_r;
+
+    const float local_x = 0;
+    const float local_y = ((player->gamemode == GAMEMODE_SHIP) ? 6 : 4) * flip_y_mult;
+
+    float rot_x = local_x * m00 + local_y * m01;
+    float rot_y = local_x * m10 + local_y * m11;
+
+    float p_x = calc_x + rot_x * scale;
+    float p_y = calc_y + rot_y * scale;
 
     switch (player->gamemode) {
         case GAMEMODE_PLAYER:
@@ -430,6 +452,11 @@ void draw_player(Player *player) {
             );
             break;
         case GAMEMODE_SHIP:
+            spawn_icon_at(GAMEMODE_PLAYER, selected_cube, player_glow_enabled, p_x, p_y, player->lerp_rotation, false, false, scale * 0.5f, 
+                C2D_Color32(p1_color.r, p1_color.g, p1_color.b, 255),
+                C2D_Color32(p2_color.r, p2_color.g, p2_color.b, 255),
+                C2D_Color32(glow_color.r, glow_color.g, glow_color.b, 255)
+            );
             spawn_icon_at(GAMEMODE_SHIP, selected_ship, player_glow_enabled, calc_x, calc_y, player->lerp_rotation, false, player->upside_down, scale, 
                 C2D_Color32(p1_color.r, p1_color.g, p1_color.b, 255),
                 C2D_Color32(p2_color.r, p2_color.g, p2_color.b, 255),
@@ -444,6 +471,11 @@ void draw_player(Player *player) {
             );
             break;
         case GAMEMODE_BIRD:
+            spawn_icon_at(GAMEMODE_PLAYER, selected_cube, player_glow_enabled, p_x, p_y, player->lerp_rotation, false, false, scale * 0.5f, 
+                C2D_Color32(p1_color.r, p1_color.g, p1_color.b, 255),
+                C2D_Color32(p2_color.r, p2_color.g, p2_color.b, 255),
+                C2D_Color32(glow_color.r, glow_color.g, glow_color.b, 255)
+            );
             spawn_icon_at(GAMEMODE_BIRD, selected_ufo, player_glow_enabled, calc_x, calc_y, player->lerp_rotation, false, player->upside_down, scale, 
                 C2D_Color32(p1_color.r, p1_color.g, p1_color.b, 255),
                 C2D_Color32(p2_color.r, p2_color.g, p2_color.b, 255),

@@ -113,8 +113,9 @@ void game_loop() {
 
         u32 kHeld = hidKeysHeld();
 
-        state.input.pressedJump = (kDown & KEY_A) == true;
-        state.input.holdJump = (kHeld & KEY_A) == true;
+        // Compare with true to store it in a single bit
+        state.input.pressedJump = ((kDown & KEY_A) || (kDown & KEY_TOUCH)) == true;
+        state.input.holdJump = ((kHeld & KEY_A) || (kHeld & KEY_TOUCH)) == true;
 
         for (size_t i = 0; i < 4; i++) {
             state.old_player = state.player;

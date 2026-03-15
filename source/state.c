@@ -113,11 +113,6 @@ void set_hitbox_size(Player *player, int gamemode) {
     }
 }
 
-void set_camera_x(float x) {
-    state.camera_x = x;
-    state.camera_x_lerp = x;
-}
-
 void set_intended_ceiling() {
     float mid_point = (state.ground_y + state.ceiling_y) / 2;
     state.camera_intended_y = mid_point - ((SCREEN_HEIGHT_AREA / 2) - CAMERA_Y_OFFSET);
@@ -141,7 +136,6 @@ void init_variables() {
     //MotionTrail_StopStroke(&trail_p1);
     //MotionTrail_StopStroke(&trail_p2);
 
-    set_camera_x(-80);
     state.camera_wall_timer = 0;
     state.camera_wall_initial_y = 0;
 
