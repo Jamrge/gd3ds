@@ -5,7 +5,7 @@ Demake made by AleFunky.\
 Geometry Dash and its respective resources are by RobTop Games.
 
 ## Current features
-* Main level viewing (freecam).
+* Main levels up to Theory of Everything II.
 * A bunch of menus (title screen, level select, icon kit...).
 * Settings and icon/colors saving.
 
