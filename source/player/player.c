@@ -3,11 +3,15 @@
 #include "icons.h"
 #include "graphics.h"
 
+#include "particles/particles.h"
+
 #include "slope.h"
 
 #include "menus/icon_kit.h"
 #include "collision.h"
 #include "math_helpers.h"
+
+ParticleSystem drag_particles;
 
 const float player_speeds[SPEED_COUNT] = {
 	251.16007972276924,

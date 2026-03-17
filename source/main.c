@@ -27,6 +27,8 @@
 #include "player/collision.h"
 #include "state.h"
 
+#include "particles/particles.h"
+
 #define CITRA_TYPE 0x20000
 #define CITRA_VERSION 11
 
@@ -94,6 +96,12 @@ void game_loop() {
 
     init_variables();
 
+    initParticleSystem(&drag_particles, &drag_effect);
+
+    drag_particles.cfg.startColorRed   = get_white_if_black(p1_color).r / 255.f;
+    drag_particles.cfg.startColorGreen = get_white_if_black(p1_color).g / 255.f;
+    drag_particles.cfg.startColorBlue  = get_white_if_black(p1_color).b / 255.f;
+
     // Main loop
     while (aptMainLoop()) {
         hidScanInput();
@@ -151,6 +159,15 @@ void game_loop() {
                 toggle_playback_mp3();
             }
         }
+
+        drag_particles.emitterX = getLeft(&state.player);
+        drag_particles.emitterY = fabsf(gravBottom(&state.player));
+        drag_particles.emitting = state.player.time_since_ground < 0.05f;
+
+        drag_particles.gravityFlipped = state.player.upside_down;
+
+
+        updateParticleSystem(&drag_particles, DT);
 
         handle_triggers();
         handle_col_triggers();
@@ -213,6 +230,8 @@ void game_loop() {
             break;
         }
     }
+
+    freeParticleData(&drag_particles.data);
 
     unload_level();
 

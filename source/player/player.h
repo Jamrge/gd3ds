@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include "level_loading.h"
 #include "icons.h"
+#include "particles/particles.h"
 
 #define STEPS_DT (1.f/240)
 
@@ -88,6 +89,8 @@ enum PlayerSpeeds {
     SPEED_FASTER,
     SPEED_COUNT
 };
+
+extern ParticleSystem drag_particles;
 
 extern const float player_speeds[SPEED_COUNT];
 

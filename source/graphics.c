@@ -911,6 +911,8 @@ void draw_objects() {
         SpriteObject *obj = viewable_objects_ptr[s];
 
         if (obj->obj == -1) {
+            change_blending(true);
+            drawParticleSystem(&drag_particles, false);
             change_blending(false);
             blend_enabled = false;
             state.current_player = 0;

@@ -1,0 +1,455 @@
+#include "particles.h"
+#include <math.h>
+#include "particle_definitions.h"
+#include <stdlib.h>
+#include <3ds.h>
+#include <citro3d.h>
+#include <stdlib.h>
+#include <citro2d.h>
+#include "state.h"
+#include "math_helpers.h"
+
+static float randf() {
+    return (float)rand() / RAND_MAX;
+}
+
+// Returns value in range [-1, 1]
+static float rand_minus1_1() {
+    return randf() * 2.0f - 1.0f;
+}
+
+static void copy_particle(ParticleData* d, int dst, int src) {
+    d->timeToLive[dst] = d->timeToLive[src];
+    d->totalTimeToLive[dst] = d->totalTimeToLive[src];
+
+    d->posx[dst] = d->posx[src];
+    d->posy[dst] = d->posy[src];
+
+    d->dirX[dst] = d->dirX[src];
+    d->dirY[dst] = d->dirY[src];
+
+    d->radialAccel[dst] = d->radialAccel[src];
+    d->tangentialAccel[dst] = d->tangentialAccel[src];
+
+    d->colorR[dst] = d->colorR[src];
+    d->colorG[dst] = d->colorG[src];
+    d->colorB[dst] = d->colorB[src];
+    d->colorA[dst] = d->colorA[src];
+
+    d->deltaColorR[dst] = d->deltaColorR[src];
+    d->deltaColorG[dst] = d->deltaColorG[src];
+    d->deltaColorB[dst] = d->deltaColorB[src];
+    d->deltaColorA[dst] = d->deltaColorA[src];
+
+    d->size[dst] = d->size[src];
+    d->deltaSize[dst] = d->deltaSize[src];
+
+    d->rotation[dst] = d->rotation[src];
+    d->deltaRotation[dst] = d->deltaRotation[src];
+}
+
+void initParticle(ParticleSystem* ps, ParticleDefinition* cfg, int i) {
+    ParticleData* d = &ps->data;
+
+    // Lifetime
+    float life = cfg->particleLifespan +
+                 cfg->particleLifespanVariance * rand_minus1_1();
+
+    life = fmaxf(0.0f, life);
+
+    d->timeToLive[i] = life;
+    d->totalTimeToLive[i] = life;
+
+    // Position
+    d->posx[i] = ps->emitterX +
+                 cfg->sourcePositionVariancex * rand_minus1_1();
+
+    d->posy[i] = ps->emitterY +
+                 cfg->sourcePositionVariancey * rand_minus1_1();
+
+    // Angle and speed
+    float angle = C3D_AngleFromDegrees(cfg->angle +
+                  cfg->angleVariance * rand_minus1_1());
+    
+
+    float speed = cfg->speed +
+                  cfg->speedVariance * rand_minus1_1();
+
+    float speed_y = ps->gravityFlipped ? -speed : speed;
+
+    d->dirX[i] = cosf(angle) * speed;
+    d->dirY[i] = sinf(angle) * speed_y;
+
+    d->gravityY[i] = ps->gravityFlipped ? -ps->gravityY : ps->gravityY;
+
+    // Radial / Tangential
+    d->radialAccel[i] =
+        cfg->radialAcceleration +
+        cfg->radialAccelVariance * rand_minus1_1();
+
+    d->tangentialAccel[i] =
+        cfg->tangentialAcceleration +
+        cfg->tangentialAccelVariance * rand_minus1_1();
+
+    // Size
+    float startSize = cfg->startParticleSize +
+                      cfg->startParticleSizeVariance * rand_minus1_1();
+    startSize = fmaxf(0.0f, startSize);
+
+    float endSize = cfg->finishParticleSize +
+                    cfg->finishParticleSizeVariance * rand_minus1_1();
+    endSize = fmaxf(0.0f, endSize);
+
+    d->size[i] = startSize;
+
+    if (life > 0)
+        d->deltaSize[i] = (endSize - startSize) / life;
+    else
+        d->deltaSize[i] = 0;
+
+    // Color
+    float sr = cfg->startColorRed +
+               cfg->startColorVarianceRed * rand_minus1_1();
+    float sg = cfg->startColorGreen +
+               cfg->startColorVarianceGreen * rand_minus1_1();
+    float sb = cfg->startColorBlue +
+               cfg->startColorVarianceBlue * rand_minus1_1();
+    float sa = cfg->startColorAlpha +
+               cfg->startColorVarianceAlpha * rand_minus1_1();
+
+    float er = cfg->finishColorRed +
+               cfg->finishColorVarianceRed * rand_minus1_1();
+    float eg = cfg->finishColorGreen +
+               cfg->finishColorVarianceGreen * rand_minus1_1();
+    float eb = cfg->finishColorBlue +
+               cfg->finishColorVarianceBlue * rand_minus1_1();
+    float ea = cfg->finishColorAlpha +
+               cfg->finishColorVarianceAlpha * rand_minus1_1();
+
+    d->colorR[i] = clampf(sr, 0, 1);
+    d->colorG[i] = clampf(sg, 0, 1);
+    d->colorB[i] = clampf(sb, 0, 1);
+    d->colorA[i] = clampf(sa, 0, 1);
+
+    if (life > 0) {
+        d->deltaColorR[i] = (er - sr) / life;
+        d->deltaColorG[i] = (eg - sg) / life;
+        d->deltaColorB[i] = (eb - sb) / life;
+        d->deltaColorA[i] = (ea - sa) / life;
+    } else {
+        d->deltaColorR[i] = 0;
+        d->deltaColorG[i] = 0;
+        d->deltaColorB[i] = 0;
+        d->deltaColorA[i] = 0;
+    }
+
+    // Rotation
+    float startRot = cfg->rotationStart +
+                     cfg->rotationStartVariance * rand_minus1_1();
+
+    float endRot = cfg->rotationEnd +
+                   cfg->rotationEndVariance * rand_minus1_1();
+
+    d->rotation[i] = startRot;
+
+    if (life > 0)
+        d->deltaRotation[i] = (endRot - startRot) / life;
+    else
+        d->deltaRotation[i] = 0;
+
+    // Radial emitter (Mode B)
+    if (cfg->emitterType == 1) {
+        float startRadius = cfg->maxRadius +
+                            cfg->maxRadiusVariance * rand_minus1_1();
+
+        float endRadius = cfg->minRadius;
+
+        d->radius[i] = startRadius;
+
+        float life = d->totalTimeToLive[i];
+
+        if (life > 0)
+            d->deltaRadius[i] = (endRadius - startRadius) / life;
+        else
+            d->deltaRadius[i] = 0;
+
+        float angle = C3D_AngleFromDegrees(cfg->angle +
+                    cfg->angleVariance * rand_minus1_1());
+
+        d->angle[i] = angle;
+
+        float degPerSec = cfg->rotatePerSecond +
+                        cfg->rotatePerSecondVariance * rand_minus1_1();
+
+        d->degreesPerSecond[i] = C3D_AngleFromDegrees(degPerSec);
+    }
+}
+
+void updateParticleSystem(ParticleSystem* ps, float dt) {
+    if (!ps->active)
+        return;
+
+    ParticleData* d = &ps->data;
+
+    // Emission
+    if (ps->emissionRate > 0.0f && ps->emitting) {
+        float rate = 1.0f / ps->emissionRate;
+
+        ps->emitCounter += dt;
+
+        int emitCount = (int)(ps->emitCounter / rate);
+
+        for (int i = 0; i < emitCount && d->count < d->capacity; i++) {
+            int idx = d->count++;
+            initParticle(ps, &ps->cfg, idx);
+        }
+
+        ps->emitCounter -= rate * emitCount;
+
+        ps->elapsed += dt;
+        if (ps->duration > 0 && ps->elapsed > ps->duration)
+            ps->active = 0;
+    }
+
+    int count = d->count;
+
+    // Time to live
+    for (int i = 0; i < count; i++)
+        d->timeToLive[i] -= dt;
+
+    // Remove dead
+    for (int i = 0; i < d->count; i++) {
+        if (d->timeToLive[i] <= 0.0f) {
+            int last = d->count - 1;
+            copy_particle(d, i, last);
+            d->count--;
+            i--; // Recheck swapped
+        }
+    }
+
+    count = d->count;
+
+    if (ps->cfg.emitterType == 0) { // Gravity Mode (Mode A)
+        for (int i = 0; i < count; i++) {
+            float px = d->posx[i];
+            float py = d->posy[i];
+
+            float radialX = 0.0f;
+            float radialY = 0.0f;
+
+            if (px != 0.0f || py != 0.0f)
+            {
+                float len = sqrtf(px * px + py * py);
+                radialX = px / len;
+                radialY = py / len;
+            }
+
+            float tangentialX = -radialY;
+            float tangentialY = radialX;
+
+            radialX *= d->radialAccel[i];
+            radialY *= d->radialAccel[i];
+
+            tangentialX *= d->tangentialAccel[i];
+            tangentialY *= d->tangentialAccel[i];
+
+            float ax = ps->gravityX + radialX + tangentialX;
+            float ay = d->gravityY[i] + radialY + tangentialY;
+
+            d->dirX[i] += ax * dt;
+            d->dirY[i] += ay * dt;
+
+            d->posx[i] += d->dirX[i] * dt;
+            d->posy[i] += d->dirY[i] * dt;
+        }
+    } else { // Radial mode (Mode B)
+        // update angle
+        for (int i = 0; i < count; i++) {
+            d->angle[i] += d->degreesPerSecond[i] * dt;
+        }
+
+        // update radius
+        for (int i = 0; i < count; i++) {
+            d->radius[i] += d->deltaRadius[i] * dt;
+        }
+
+        // convert polar -> cartesian
+        for (int i = 0; i < count; i++) {
+            d->posx[i] = -cosf(d->angle[i]) * d->radius[i];
+        }
+
+        for (int i = 0; i < count; i++) {
+            d->posy[i] = -sinf(d->angle[i]) * d->radius[i];
+        }
+    }
+
+    // Color
+    for (int i = 0; i < count; i++)
+        d->colorR[i] += d->deltaColorR[i] * dt;
+
+    for (int i = 0; i < count; i++)
+        d->colorG[i] += d->deltaColorG[i] * dt;
+
+    for (int i = 0; i < count; i++)
+        d->colorB[i] += d->deltaColorB[i] * dt;
+
+    for (int i = 0; i < count; i++)
+        d->colorA[i] += d->deltaColorA[i] * dt;
+
+    // Size
+    for (int i = 0; i < count; i++) {
+        d->size[i] += d->deltaSize[i] * dt;
+        if (d->size[i] < 0) d->size[i] = 0;
+    }
+
+    // Rotation
+    for (int i = 0; i < count; i++)
+        d->rotation[i] += d->deltaRotation[i] * dt;
+}
+
+static float* alloc_array(int count) {
+    return (float*)malloc(sizeof(float) * count);
+}
+
+void initParticleData(ParticleData* d, int capacity) {
+    d->count = 0;
+    d->capacity = capacity;
+
+    d->timeToLive = alloc_array(capacity);
+    d->totalTimeToLive = alloc_array(capacity);
+
+    d->posx = alloc_array(capacity);
+    d->posy = alloc_array(capacity);
+
+    d->dirX = alloc_array(capacity);
+    d->dirY = alloc_array(capacity);
+
+    d->gravityY = alloc_array(capacity);
+
+    d->radialAccel = alloc_array(capacity);
+    d->tangentialAccel = alloc_array(capacity);
+
+    d->colorR = alloc_array(capacity);
+    d->colorG = alloc_array(capacity);
+    d->colorB = alloc_array(capacity);
+    d->colorA = alloc_array(capacity);
+
+    d->deltaColorR = alloc_array(capacity);
+    d->deltaColorG = alloc_array(capacity);
+    d->deltaColorB = alloc_array(capacity);
+    d->deltaColorA = alloc_array(capacity);
+
+    d->size = alloc_array(capacity);
+    d->deltaSize = alloc_array(capacity);
+
+    d->rotation = alloc_array(capacity);
+    d->deltaRotation = alloc_array(capacity);
+
+    // Mode B
+    d->angle = alloc_array(capacity);
+    d->degreesPerSecond = alloc_array(capacity);
+    d->radius = alloc_array(capacity);
+    d->deltaRadius = alloc_array(capacity);
+}
+
+void initParticleSystem(ParticleSystem* ps, ParticleDefinition* cfg) {
+    // Allocate particles
+    initParticleData(&ps->data, cfg->maxParticles);
+
+    // Basic state
+    ps->active = true;
+    ps->emitting = true;
+    ps->gravityFlipped = false;
+    ps->elapsed = 0.0f;
+    ps->duration = cfg->duration;
+    ps->emitterX = cfg->sourcePositionx;
+    ps->emitterY = cfg->sourcePositiony;
+
+    ps->emitCounter = 0.0f;
+
+    // Emission rate
+    if (cfg->particleLifespan > 0)
+        ps->emissionRate = cfg->maxParticles / cfg->particleLifespan;
+    else
+        ps->emissionRate = 0;
+        
+    // Gravity
+    ps->gravityX = cfg->gravityx;
+    ps->gravityY = cfg->gravityy;
+
+    ps->cfg = *cfg;
+}
+
+void freeParticleData(ParticleData* d) {
+    // Free deez nuts
+    free(d->timeToLive);
+    free(d->totalTimeToLive);
+
+    free(d->posx);
+    free(d->posy);
+
+    free(d->dirX);
+    free(d->dirY);
+
+    free(d->gravityY);
+
+    free(d->radialAccel);
+    free(d->tangentialAccel);
+
+    free(d->colorR);
+    free(d->colorG);
+    free(d->colorB);
+    free(d->colorA);
+
+    free(d->deltaColorR);
+    free(d->deltaColorG);
+    free(d->deltaColorB);
+    free(d->deltaColorA);
+
+    free(d->size);
+    free(d->deltaSize);
+
+    free(d->rotation);
+    free(d->deltaRotation);
+
+    free(d->angle);
+    free(d->degreesPerSecond);
+    free(d->radius);
+    free(d->deltaRadius);
+}
+
+void drawParticleSystem(ParticleSystem* ps, bool isStationary) {
+    ParticleData* d = &ps->data;
+    int count = d->count;
+
+    for (int i = 0; i < count; i++) {
+        float x = d->posx[i];
+        float y = d->posy[i];
+        float size = d->size[i];
+
+        float r = d->colorR[i];
+        float g = d->colorG[i];
+        float b = d->colorB[i];
+        float a = d->colorA[i];
+
+        u32 color = C2D_Color32f(r, g, b, a);
+
+        // If stationary, dont convert to screen space
+        if (!isStationary) {
+            x = ((x - state.camera_x));
+            y = GSP_SCREEN_WIDTH - ((y - state.camera_y));  
+        }
+
+        // Draw centered square
+        float half = size * 0.5f;
+
+        C2D_DrawRectSolid(
+            x - half,
+            y - half,
+            0.0f,
+            size,
+            size,
+            color
+        );
+    }
+}

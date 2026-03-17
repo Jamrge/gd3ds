@@ -99,6 +99,7 @@ inline float normalize_angle(float a)
     return a;
 }
 
+void change_blending(bool blending);
 Color get_white_if_black(Color color);
 void draw_objects();
 void draw_background(float x, float y);
