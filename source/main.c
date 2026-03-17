@@ -234,8 +234,11 @@ void game_loop() {
 }
 
 void game_assets_init() {
-    bgSheet = C2D_SpriteSheetLoad("romfs:/gfx/bg.t3x");
+    bgSheet = C2D_SpriteSheetLoad("romfs:/gfx/bg_sheet_01.t3x");
     if (!bgSheet) svcBreak(USERBREAK_PANIC);
+    
+    bg2Sheet = C2D_SpriteSheetLoad("romfs:/gfx/bg_sheet_02.t3x");
+    if (!bg2Sheet) svcBreak(USERBREAK_PANIC);
     
     groundSheet = C2D_SpriteSheetLoad("romfs:/gfx/grounds.t3x");
     if (!groundSheet) svcBreak(USERBREAK_PANIC);
@@ -311,6 +314,7 @@ int main(int argc, char* argv[]) {
     C2D_SpriteSheetFree(spriteSheet2);
     C2D_SpriteSheetFree(glowSheet);
     C2D_SpriteSheetFree(bgSheet);
+    C2D_SpriteSheetFree(bg2Sheet);
     C2D_SpriteSheetFree(iconSheet);
     C2D_SpriteSheetFree(ui_sheet);
     C2D_SpriteSheetFree(ui_2_sheet);

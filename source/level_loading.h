@@ -75,6 +75,32 @@ typedef struct Section {
     struct Section *next; // For chaining in hash map
 } Section;
 
+typedef struct {
+    float last_obj_x;
+    float wall_x;
+    float wall_y;
+
+    int pulsing_type;
+    int song_id;
+    int custom_song_id;
+    float song_offset;
+    bool completing;
+    int background_id;
+    int ground_id;
+    int initial_gamemode;
+    bool initial_mini;
+    unsigned char initial_speed;
+    bool initial_dual;
+    bool initial_upsidedown;
+    bool level_is_empty;
+    bool level_is_custom;
+} LoadedLevelInfo;
+
+extern LoadedLevelInfo level_info;
+
+#define BG_COUNT 8
+#define G_COUNT 8
+
 extern ObjectsArray objects;
 
 char *read_file(const char *filepath, size_t *out_size);

@@ -77,6 +77,8 @@ enum JumpType {
 
 #define MAX_COLLIDED_OBJECTS 256
 
+void setup_dual();
+
 void collide_with_objects(Player *player);
 bool intersect(float x1, float y1, float w1, float h1, float angle1,
                float x2, float y2, float w2, float h2, float angle2);

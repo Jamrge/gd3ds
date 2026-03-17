@@ -87,6 +87,7 @@ extern C2D_SpriteSheet spriteSheet;
 extern C2D_SpriteSheet spriteSheet2;
 extern C2D_SpriteSheet glowSheet;
 extern C2D_SpriteSheet bgSheet;
+extern C2D_SpriteSheet bg2Sheet;
 extern C2D_SpriteSheet groundSheet;
 extern C2D_SpriteSheet iconSheet;
 

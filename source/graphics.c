@@ -27,6 +27,7 @@ C2D_SpriteSheet spriteSheet;
 C2D_SpriteSheet spriteSheet2;
 C2D_SpriteSheet glowSheet;
 C2D_SpriteSheet bgSheet;
+C2D_SpriteSheet bg2Sheet;
 C2D_SpriteSheet groundSheet;
 C2D_SpriteSheet iconSheet;
 
@@ -775,12 +776,15 @@ void draw_background(float x, float y) {
     float calc_x = positive_fmodf(x, offset);
     float draw_y = -y;
 
+    int bg_id = level_info.background_id;
+
     for (int i = 0; i < 2; i++) {
         C2D_Sprite bg = { 0 };
         // Calculate position for each tile
         float draw_x = -calc_x + i * offset;
+
         
-        C2D_SpriteFromSheet(&bg, bgSheet, 0);
+        C2D_SpriteFromSheet(&bg, bg_id < 4 ? bgSheet : bg2Sheet, bg_id & 0b11);
         C3D_TexSetFilter(bg.image.tex, GPU_LINEAR, GPU_LINEAR);
         C2D_SpriteSetPos(&bg, (int)draw_x, (int)draw_y);
         C2D_SpriteSetScale(&bg, BACKGROUND_SCALE, BACKGROUND_SCALE);
@@ -804,7 +808,7 @@ void draw_ground(float cam_x, float cam_y, float y, bool is_ceiling, int screen_
 
     for (float i = -GROUND_SIZE; i < (screen_width / SCALE) + GROUND_SIZE; i += GROUND_SIZE) {
         C2D_Sprite ground = { 0 };
-        C2D_SpriteFromSheet(&ground, groundSheet, 1);
+        C2D_SpriteFromSheet(&ground, groundSheet, level_info.ground_id + 1);
         C3D_TexSetFilter(ground.image.tex, GPU_LINEAR, GPU_LINEAR);
         C2D_SpriteSetPos(&ground, calc_x + i, calc_y);
         C2D_SpriteSetScale(&ground, 1.f, mult);

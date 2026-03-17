@@ -4,6 +4,7 @@
 #include "math_helpers.h"
 #include "player/slope.h"
 #include "mp3_player.h"
+#include "player/collision.h"
 
 GameState state;
 
@@ -151,7 +152,7 @@ void init_variables() {
     //p1_trail = FALSE;
     state.death_timer = 0.f;
 
-    //level_info.completing = FALSE;
+    level_info.completing = false;
     
     memset(&state.player, 0, sizeof(Player));
     //memset(&state.hitbox_trail_players, 0, sizeof(state.hitbox_trail_players));
@@ -166,7 +167,7 @@ void init_variables() {
     player->cutscene_timer = 0;
     player->width = 30;
     player->height = 30;
-    state.speed = 1;//level_info.initial_speed;
+    state.speed = level_info.initial_speed;
     player->x = 0;
     player->y = player->height / 2;
     player->vel_x = player_speeds[state.speed];  
@@ -176,12 +177,12 @@ void init_variables() {
 
     state.current_player = 0;
 
-    set_gamemode(player, GAMEMODE_PLAYER);//level_info.initial_gamemode);
+    set_gamemode(player, level_info.initial_gamemode);
     player->on_ground = true;
     player->on_ceiling = false;
     player->inverse_rotation = false;
-    set_mini(player, 0);//level_info.initial_mini);
-    player->upside_down = false;//level_info.initial_upsidedown;
+    set_mini(player, level_info.initial_mini);
+    player->upside_down = level_info.initial_upsidedown;
     player->timeElapsed = 0.f;
 
     player->internal_hitbox.height = 9;
@@ -190,7 +191,7 @@ void init_variables() {
     player->cutscene_initial_player_x = 0;
     player->cutscene_initial_player_y = 0;
 
-    switch (0) {//level_info.initial_gamemode) {
+    switch (level_info.initial_gamemode) {
         case GAMEMODE_SHIP:
         case GAMEMODE_BIRD:
         case GAMEMODE_DART:
@@ -205,11 +206,11 @@ void init_variables() {
             state.camera_intended_y = 0;
     }
     
-    //if (level_info.initial_dual) {
-    //    state.dual = TRUE;
-    //    state.dual_portal_y = 0.f;
-    //    setup_dual();
-    //}
+    if (level_info.initial_dual) {
+        state.dual = true;
+        state.dual_portal_y = 0.f;
+        setup_dual();
+    }
     run_camera();
 
     // Set camera vertical pos

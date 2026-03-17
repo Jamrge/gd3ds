@@ -10,6 +10,7 @@
 #include "objects.h"
 #include "mp3_player.h"
 #include "graphics.h"
+#include "math_helpers.h"
 
 #include "player/collision.h"
 
@@ -19,6 +20,8 @@ Section *section_hash[SECTION_HASH_SIZE] = {0};
 
 int channelCount = 0;
 GDColorChannel *colorChannels = NULL;
+
+LoadedLevelInfo level_info;
 
 static inline unsigned int section_hash_func(unsigned int x) {
     x ^= x >> 16;
@@ -834,6 +837,11 @@ int parse_gd_object(const char *objStr, int obj) {
         }
     }
 
+    // Modify level ending pos
+    if (objects.x[obj] > level_info.last_obj_x) {
+        level_info.last_obj_x = objects.x[obj];
+    }
+
     free_string_array(tokens, count);
     return 1;
 }
@@ -1067,6 +1075,90 @@ void set_color_channels() {
     }
 }
 
+void load_level_info(char *data, char *level_string) {
+    char *gmd_song_id = extract_gmd_key((const char *) data, "k8", "i");
+    if (!gmd_song_id) {
+        level_info.song_id = 0; // Stereo Madness
+    } else {
+        level_info.song_id = atoi(gmd_song_id); // Official song id
+        free(gmd_song_id);
+    }
+
+    char *gmd_custom_song_id = extract_gmd_key((const char *) data, "k45", "i");
+    if (!gmd_custom_song_id) {
+        level_info.custom_song_id = -1;
+    } else {
+        level_info.custom_song_id = atoi(gmd_custom_song_id); // Custom song id
+        free(gmd_custom_song_id);
+    }
+    
+    char *gmd_song_offset = get_metadata_value(level_string, "kA13");
+    if (gmd_song_offset) {
+        level_info.song_offset = atof(gmd_song_offset);
+        free(gmd_song_offset);
+    } else {
+        level_info.song_offset = 0;
+    }
+
+    char *background_data = get_metadata_value(level_string, "kA6");
+    if (background_data) {
+        level_info.background_id = CLAMP(atoi(background_data) - 1, 0, BG_COUNT - 1);
+        free(background_data);
+    } else {
+        level_info.background_id = 0;
+    }
+
+    char *ground_data = get_metadata_value(level_string, "kA7");
+    if (ground_data) {
+        level_info.ground_id = CLAMP(atoi(ground_data) - 1, 0, G_COUNT - 1);
+        free(ground_data);
+    } else {
+        level_info.ground_id = 0;
+    }
+    
+    char *gamemode_data = get_metadata_value(level_string, "kA2");
+    if (gamemode_data) {
+        level_info.initial_gamemode = CLAMP(atoi(gamemode_data), 0, GAMEMODE_COUNT - 1);
+        free(gamemode_data);
+    } else {
+        level_info.initial_gamemode = GAMEMODE_PLAYER;
+    }
+
+    char *mini_data = get_metadata_value(level_string, "kA3");
+    if (mini_data) {
+        level_info.initial_mini = atoi(mini_data) != 0;    
+        free(mini_data);
+    } else {
+        level_info.initial_mini = 0; 
+    }
+
+    char *speed_data = get_metadata_value(level_string, "kA4");
+    if (speed_data) {
+        level_info.initial_speed = CLAMP(atoi(speed_data), 0, SPEED_COUNT - 1);
+        if (level_info.initial_speed == 0) level_info.initial_speed = SPEED_NORMAL;
+        else if (level_info.initial_speed == 1) level_info.initial_speed = SPEED_SLOW;
+        free(speed_data);
+    } else {
+        level_info.initial_speed = SPEED_NORMAL;
+    }
+
+    char *dual_data = get_metadata_value(level_string, "kA8");
+    if (dual_data) {
+        level_info.initial_dual = atoi(dual_data) != 0;
+        free(dual_data);
+    } else {
+        level_info.initial_dual = 0; 
+    }
+
+    char *upsidedown_data = get_metadata_value(level_string, "kA11");
+    if (upsidedown_data) {
+        level_info.initial_upsidedown = atoi(upsidedown_data) != 0;
+        free(upsidedown_data);
+    } else {
+        level_info.initial_upsidedown = 0; 
+    }
+}
+
 const int rod_images[3] = {
     634,
     635,
@@ -1089,6 +1181,10 @@ int load_level(char *path) {
     if (!channelCount) {
         channelCount = parse_old_channels(data, &colorChannels);
     }
+
+    load_level_info(level, data);
+
+    level_info.last_obj_x = 570.f;
 
     bool returned = parse_string(data);
 

@@ -55,6 +55,8 @@ C2D_SpriteSheet *get_sheet(int sheet) {
             return &groundSheet;
         case 7:
             return &iconSheet;
+        case 8:
+            return &bg2Sheet;
     }
     return NULL;
 }
