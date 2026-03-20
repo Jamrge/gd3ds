@@ -42,6 +42,7 @@ typedef struct
     int col_type;
     float opacity;
     int col_channel;
+    int zlayer;
 } SpriteObject;
 
 typedef struct {
@@ -95,6 +96,10 @@ extern C2D_SpriteSheet trailSheet;
 extern SpriteTemplate sprite_templates[GAME_OBJECT_COUNT];
 
 extern const Color white;
+
+extern float object_creating_time;
+extern float object_sorting_time;
+extern float object_drawing_time;
 
 inline float normalize_angle(float a)
 {

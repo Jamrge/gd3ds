@@ -125,6 +125,8 @@ int output_log(const char *fmt, ...) {
     return ret;
 }
 
+float sprite_drawing_time = 0;
+
 void game_loop() {
     int returned = load_level(main_levels[curr_level_id].gmd_path);
     if (returned) {
@@ -238,7 +240,11 @@ void game_loop() {
 
             C2D_ViewScale(SCALE, SCALE);
 
+            u64 start = svcGetSystemTick();
             draw_objects();
+            u64 end = svcGetSystemTick();
+            u64 ticks = end - start;
+            sprite_drawing_time = ticks / CPU_TICKS_PER_MSEC;
 
             draw_ground(state.ground_x, state.camera_y, 0, false, SCREEN_WIDTH);
             
@@ -256,6 +262,11 @@ void game_loop() {
             draw_text(bigFont_fontCharset, bigFont_sheet, 0, 6, 0.5f, 0, "CPU: %6.2f%%", C3D_GetProcessingTime() * 6.25f);
             draw_text(bigFont_fontCharset, bigFont_sheet, 0, 18, 0.5f, 0, "GPU: %6.2f%%", C3D_GetDrawingTime() * 6.25f);
             draw_text(bigFont_fontCharset, bigFont_sheet, 0, 30, 0.5f, 0, "Usage: %6.2f%%", (C3D_GetProcessingTime() + C3D_GetDrawingTime()) * 6.25f);
+
+            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 42, 0.5f, 0, "SprDraw:  %6.2f%%", (sprite_drawing_time) * 6.25f);
+            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 54, 0.5f, 0, "Creating: %6.2f%%", (object_creating_time) * 6.25f);
+            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 66, 0.5f, 0, "Sorting:  %6.2f%%", (object_sorting_time) * 6.25f);
+            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 78, 0.5f, 0, "Drawing:  %6.2f%%", (object_drawing_time) * 6.25f);
 
             if (state.noclip) {
                 draw_text(bigFont_fontCharset, bigFont_sheet, 0, 234, 0.5f, 0, "Noclip Activated");

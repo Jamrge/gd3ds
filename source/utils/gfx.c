@@ -218,6 +218,9 @@ void set_wide(bool wide) {
 }
 
 float get_mirror_x(float x, float factor) {
+    if (factor == 0) return x;
+    else if (factor == 1) return ((SCREEN_WIDTH / SCALE)) - x;
+    
     return x + factor * ((SCREEN_WIDTH / SCALE) - 2.0f * x);
 }
 

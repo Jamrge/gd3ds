@@ -468,7 +468,7 @@ void spawn_object_at(
     }
 }
 
-static inline uint32_t make_sort_key(const SpriteObject *s)
+static inline uint32_t make_sort_key(SpriteObject *s)
 {
     const int obj = s->obj;
 
@@ -513,6 +513,8 @@ static inline uint32_t make_sort_key(const SpriteObject *s)
     if (id >= 15 && id <= 17 && s->layer == 2) {
         zlayer += 2;
     } 
+
+    s->zlayer = zlayer;
 
     uint32_t zl = (uint32_t)(zlayer + 8);     // fits in 7 bits
     uint32_t zs = (uint32_t)(sheet);          // fits in 1 bit
@@ -839,6 +841,10 @@ void draw_ground(float cam_x, float cam_y, float y, bool is_ceiling, int screen_
     }
 }
 
+float object_creating_time = 0;
+float object_sorting_time = 0;
+float object_drawing_time = 0;
+
 void draw_objects() {
     sprite_count = 0;
 
@@ -857,7 +863,7 @@ void draw_objects() {
 
     int width = (SCREEN_WIDTH / 2) / SECTION_SIZE + 2;
     int cam_sx = (int)((state.camera_x + SCREEN_WIDTH / 2) / SECTION_SIZE);
-
+    u64 start = svcGetSystemTick();
     // Create sprites
     for (int x = -width; x <= width; x++) {
         int section = cam_sx + x;
@@ -910,18 +916,77 @@ void draw_objects() {
             spawn_object_particles(obj);
         }
     }
-
+    
+    u64 end = svcGetSystemTick();
+    u64 ticks = end - start;
+    object_creating_time = ticks / CPU_TICKS_PER_MSEC;
+    
+    start = svcGetSystemTick();
     // Sort
     sort_viewable_objects(viewable_objects_ptr, sprite_count);
+    end = svcGetSystemTick();
+    ticks = end - start;
+    object_sorting_time = ticks / CPU_TICKS_PER_MSEC;
+
+    start = svcGetSystemTick();
 
     int blend_enabled = false;
-
     // Draw
     C2D_ImageTint tint = { 0 };
+    int current_layer = -69420;
     for (size_t s = 0; s < sprite_count; s++) {
         SpriteObject *obj = viewable_objects_ptr[s];
 
-        if (obj->obj == -1) {
+        if (obj->obj != -1) {
+            int col_channel = obj->col_channel;
+
+            ColorChannel col;
+
+            if (col_channel < 0) {
+                col.color.r = 255;
+                col.color.g = 255;
+                col.color.b = 255;
+                col.blending = false;
+            } else {
+                col = channels[col_channel];
+            }
+
+            int zl = obj->zlayer;
+
+            if (zl != current_layer) {
+                current_layer = zl;
+
+                bool should_blend = ((zl & 1) == 0);
+
+                if (should_blend != blend_enabled) {
+                    change_blending(should_blend);
+                    blend_enabled = should_blend;
+                }
+            }
+
+            // Cull invisible objects
+            if ((col.color.r | col.color.g | col.color.b) == 0 && blend_enabled) continue;
+            
+            int game_object = obj->obj;
+            float x = ((objects.x[game_object] - state.camera_x));
+            
+            float opacity = obj->opacity;
+            if (object_fades(game_object)) {
+                opacity *= get_fading_obj_fade(x, SCREEN_WIDTH / SCALE);
+            }
+            
+            C2D_PlainImageTint(&tint, C2D_Color32(col.color.r, col.color.g, col.color.b, get_opacity(game_object, x) * opacity), 1.f);
+            C2D_DrawSpriteTinted(&obj->spr, &tint);
+/*
+            float calc_x = ((objects.x[game_object] - state.camera_x));
+            float calc_y = SCREEN_HEIGHT - ((objects.y[game_object] - state.camera_y));  
+            float width = objects.width[game_object];
+            float height = objects.height[game_object];
+
+            C2D_DrawRectSolid(calc_x - width/2, calc_y - height/2, 0, width, height, 
+                C2D_Color32(0, 0, 255, 255));
+*/
+        } else {   
             change_blending(true);
             draw_object_particles();
             drawParticleSystem(&drag_particles, false, 0, 0, 1.f);
@@ -944,53 +1009,12 @@ void draw_objects() {
                 draw_player(&state.player2);
                 trail_p2 = trail;
                 wave_trail_p2 = wave_trail;
-            }
-        } else {   
-            int col_channel = obj->col_channel;
-
-            ColorChannel col;
-
-            if (col_channel < 0) {
-                col.color.r = 255;
-                col.color.g = 255;
-                col.color.b = 255;
-                col.blending = false;
-            }else {
-                col = channels[col_channel];
-            }
-            
-            if (col.blending && !blend_enabled) {
-                change_blending(true);
-                blend_enabled = true;
-            } else if (!col.blending && blend_enabled) {
-                change_blending(false);
-                blend_enabled = false;
-            }
-            
-            int game_object = obj->obj;
-            float x = ((objects.x[game_object] - state.camera_x));
-            
-            float opacity = obj->opacity;
-            if (object_fades(game_object)) {
-                opacity *= get_fading_obj_fade(x, SCREEN_WIDTH / SCALE);
-            }
-
-            // Cull invisible objects
-            if ((col.color.r | col.color.g | col.color.b) == 0 && blend_enabled) continue;
-            
-            C2D_PlainImageTint(&tint, C2D_Color32(col.color.r, col.color.g, col.color.b, get_opacity(game_object, x) * opacity), 1.f);
-            C2D_DrawSpriteTinted(&obj->spr, &tint);
-/*
-            float calc_x = ((objects.x[game_object] - state.camera_x));
-            float calc_y = SCREEN_HEIGHT - ((objects.y[game_object] - state.camera_y));  
-            float width = objects.width[game_object];
-            float height = objects.height[game_object];
-
-            C2D_DrawRectSolid(calc_x - width/2, calc_y - height/2, 0, width, height, 
-                C2D_Color32(0, 0, 255, 255));
-*/
+            }          
         }
     }
+    end = svcGetSystemTick();
+    ticks = end - start;
+    object_drawing_time = ticks / CPU_TICKS_PER_MSEC;
 }
 
 void spawn_icon_at(
