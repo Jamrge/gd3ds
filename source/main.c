@@ -177,7 +177,6 @@ void game_loop() {
             state.noclip ^= 1;
 
         u32 kHeld = hidKeysHeld();
-
         // Compare with true to store it in a single bit
         state.input.pressedJump = ((kDown & KEY_A) || (kDown & KEY_TOUCH)) == true;
         state.input.holdJump = (state.input.pressedJump || (kHeld & KEY_A) || (kHeld & KEY_TOUCH)) == true;
@@ -185,7 +184,7 @@ void game_loop() {
             u64 now = svcGetSystemTick();
             float dt = (now - lastTime) / (CPU_TICKS_PER_MSEC * 1000);
             lastTime = now;
-            if (dt > 1) dt = 1; // Avoid spiral of death
+            if (dt > 0.5f) dt = STEPS_DT_UNMOD; // Avoid spiral of death
             if (fixed_dt) {
                 dt = STEPS_DT_UNMOD;
                 if (!being_faded) fixed_dt = false;
@@ -289,14 +288,14 @@ void game_loop() {
             C2D_SceneBegin(bot);
             C2D_TargetClear(bot, C2D_Color32(0, 0, 0, 255));
             
-            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 6, 0.5f, 0, "CPU: %6.2f%%", C3D_GetProcessingTime() * 6.25f);
-            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 18, 0.5f, 0, "GPU: %6.2f%%", C3D_GetDrawingTime() * 6.25f);
-            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 30, 0.5f, 0, "Usage: %6.2f%%", (C3D_GetProcessingTime() + C3D_GetDrawingTime()) * 6.25f);
+            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 6, 0.5f, 0, "CPU: %6.2f%%", C3D_GetProcessingTime() * 6);
+            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 18, 0.5f, 0, "GPU: %6.2f%%", C3D_GetDrawingTime() * 6);
+            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 30, 0.5f, 0, "Usage: %6.2f%%", (C3D_GetProcessingTime() + C3D_GetDrawingTime()) * 6);
 
-            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 42, 0.5f, 0, "SprDraw:  %6.2f%%", (sprite_drawing_time) * 6.25f);
-            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 54, 0.5f, 0, "Creating: %6.2f%%", (object_creating_time) * 6.25f);
-            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 66, 0.5f, 0, "Sorting:  %6.2f%%", (object_sorting_time) * 6.25f);
-            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 78, 0.5f, 0, "Drawing:  %6.2f%%", (object_drawing_time) * 6.25f);
+            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 42, 0.5f, 0, "SprDraw:  %6.2f%%", (sprite_drawing_time) * 6);
+            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 54, 0.5f, 0, "Creating: %6.2f%%", (object_creating_time) * 6);
+            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 66, 0.5f, 0, "Sorting:  %6.2f%%", (object_sorting_time) * 6);
+            draw_text(bigFont_fontCharset, bigFont_sheet, 0, 78, 0.5f, 0, "Drawing:  %6.2f%%", (object_drawing_time) * 6);
 
             if (state.noclip) {
                 draw_text(bigFont_fontCharset, bigFont_sheet, 0, 234, 0.5f, 0, "Noclip Activated");
