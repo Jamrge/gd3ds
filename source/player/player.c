@@ -576,50 +576,46 @@ void spawn_p1_trail(Player *player) {
 }
 
 void update_p1_trail(Player *player) {
-    if (p1_trail) {
-        // Spawn new p1 icon
-        if ((frame_counter & 0b11) == 0) {
-            spawn_p1_trail(player);
-        }
+    // Spawn new p1 icon
+    if (p1_trail && (frame_counter & 0b11) == 0) {
+        spawn_p1_trail(player);
+    }
 
-        for (size_t i = 0; i < P1_TRAIL_LENGTH; i++) {
-            P1Trail *trail_data = &player->p1_trail_data[i];
+    for (size_t i = 0; i < P1_TRAIL_LENGTH; i++) {
+        P1Trail *trail_data = &player->p1_trail_data[i];
 
-            if (trail_data->active) {
-                trail_data->opacity -= (1.f / P1_TRAIL_DURATION) * delta;
-                trail_data->scale += trail_data->delta_scale * delta;
+        if (trail_data->active) {
+            trail_data->opacity -= (1.f / P1_TRAIL_DURATION) * delta;
+            trail_data->scale += trail_data->delta_scale * delta;
 
-                trail_data->life -= delta;
+            trail_data->life -= delta;
 
-                if (trail_data->life <= 0) {
-                    trail_data->active = false;
-                }
+            if (trail_data->life <= 0) {
+                trail_data->active = false;
             }
         }
     }
 }
 
 void draw_p1_trail(Player *player) {
-    if (p1_trail) {
-        for (size_t i = 0; i < P1_TRAIL_LENGTH; i++) {
-            P1Trail *trail_data = &player->p1_trail_data[i];
+    for (size_t i = 0; i < P1_TRAIL_LENGTH; i++) {
+        P1Trail *trail_data = &player->p1_trail_data[i];
 
-            if (trail_data->active) {
-                float calc_x = ((trail_data->x - state.camera_x));
-                float calc_y = SCREEN_HEIGHT - ((trail_data->y - state.camera_y));
-                bool flip_x = (state.mirror_mult < 0);
+        if (trail_data->active) {
+            float calc_x = ((trail_data->x - state.camera_x));
+            float calc_y = SCREEN_HEIGHT - ((trail_data->y - state.camera_y));
+            bool flip_x = (state.mirror_mult < 0);
 
-                u32 color = (state.current_player == 1) ? C2D_Color32(p2_color.r, p2_color.g, p2_color.b, trail_data->opacity * 255) : C2D_Color32(p1_color.r, p1_color.g, p1_color.b, trail_data->opacity * 255);
+            u32 color = (state.current_player == 1) ? C2D_Color32(p2_color.r, p2_color.g, p2_color.b, trail_data->opacity * 255) : C2D_Color32(p1_color.r, p1_color.g, p1_color.b, trail_data->opacity * 255);
 
-                spawn_p1_layer_at(
-                    trail_data->gamemode, *current_icons[trail_data->gamemode], 
-                    get_mirror_x(calc_x, state.mirror_factor), calc_y, 
-                    trail_data->rot,  
-                    flip_x, trail_data->upside_down,
-                    trail_data->scale,
-                    color
-                );
-            }
+            spawn_p1_layer_at(
+                trail_data->gamemode, *current_icons[trail_data->gamemode], 
+                get_mirror_x(calc_x, state.mirror_factor), calc_y, 
+                trail_data->rot,  
+                flip_x, trail_data->upside_down,
+                trail_data->scale,
+                color
+            );
         }
     }
 }
