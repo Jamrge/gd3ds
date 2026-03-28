@@ -8,7 +8,6 @@ typedef struct {
     ParticleSystem ps;
     int id;
     bool occupied;
-    bool isStationary;
 } ObjectParticles;
 
 extern ObjectParticles object_particle[MAX_OBJECT_PS];

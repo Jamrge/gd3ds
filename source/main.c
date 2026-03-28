@@ -166,11 +166,23 @@ void game_loop() {
     init_op_system();
     initParticleSystem(&drag_particles, &drag_effect);
     initParticleSystem(&drag_particles_2, &ship_drag_effect);
+    initParticleSystem(&burst_particles, &burst_effect);
     gameplay_screen_init();
 
-    drag_particles.cfg.startColorRed   = get_white_if_black(p1_color).r / 255.f;
-    drag_particles.cfg.startColorGreen = get_white_if_black(p1_color).g / 255.f;
-    drag_particles.cfg.startColorBlue  = get_white_if_black(p1_color).b / 255.f;
+    Color p1_not_white = get_white_if_black(p1_color);
+
+    drag_particles.cfg.startColorRed   = p1_not_white.r / 255.f;
+    drag_particles.cfg.startColorGreen = p1_not_white.g / 255.f;
+    drag_particles.cfg.startColorBlue  = p1_not_white.b / 255.f;
+
+    burst_particles.cfg.startColorRed   = p1_not_white.r / 255.f;
+    burst_particles.cfg.startColorGreen = p1_not_white.g / 255.f;
+    burst_particles.cfg.startColorBlue  = p1_not_white.b / 255.f;
+
+    drag_particles.emitting = false;
+    drag_particles_2.stationary = true;
+    drag_particles_2.emitting = false;
+    burst_particles.emitting = false;
 
     exiting_level = false;
 
@@ -283,7 +295,7 @@ void game_loop() {
 
         if (!game_paused) {
             frame_counter++;
-            
+
             if (state.dead && state.death_timer <= 0.f) {
                 state.death_timer = 1.f;
                 handle_death();
@@ -318,6 +330,7 @@ void game_loop() {
             u64 start_part = svcGetSystemTick();
             updateParticleSystem(&drag_particles, delta);
             updateParticleSystem(&drag_particles_2, delta);
+            updateParticleSystem(&burst_particles, delta);
             update_object_particles();
             u64 end_part = svcGetSystemTick();
             u64 ticks_part = end_part - start_part;
@@ -424,6 +437,7 @@ void game_loop() {
 
     freeParticleData(&drag_particles.data);
     freeParticleData(&drag_particles_2.data);
+    freeParticleData(&burst_particles.data);
 
     unload_level();
 

@@ -27,8 +27,10 @@ int load_object_particles(int id, const ParticleDefinition *cfg, bool stationary
         if (!object_particle[i].occupied) {
             object_particle[i].occupied = true;
             object_particle[i].id = id;
-            object_particle[i].isStationary = stationary;
+            object_particle[i].ps.stationary = stationary; 
             initParticleSystem(&object_particle[i].ps, cfg);
+            
+            object_particle[i].ps.emitting = true;
             return i;
         }
     }
@@ -41,7 +43,7 @@ static void remove_offscreen_object_particles() {
             float x = object_particle[i].ps.emitterX;
             float y = object_particle[i].ps.emitterY;
 
-            if (!object_particle[i].isStationary) {
+            if (!object_particle[i].ps.stationary) {
                 x = ((x - state.camera_x));
                 y = SCREEN_HEIGHT - ((y - state.camera_y));  
             }
@@ -78,7 +80,7 @@ void draw_object_particles() {
 
             float opacity = obj_edge_fade(calc_x, SCREEN_WIDTH / SCALE) / 255.f;
 
-            drawParticleSystem(&object_particle[i].ps, object_particle[i].isStationary, fade_x, fade_y, opacity);
+            drawParticleSystem(&object_particle[i].ps, fade_x, fade_y, opacity);
         }
     }
 }

@@ -150,7 +150,7 @@ int gameplay_screen_bot_loop() {
     if (!in_settings) {
         ui_screen_update(&screen, &touch);
         
-        if ((kDown & KEY_B) && !exiting_level) {
+        if ((kDown & KEY_B) && !exiting_level && game_paused) {
             exit_level();
         }
     }

@@ -70,10 +70,10 @@ void initParticle(ParticleSystem* ps, const ParticleDefinition* cfg, int i) {
     d->totalTimeToLive[i] = life;
 
     // Position
-    d->posx[i] = ps->emitterX +
+    d->posx[i] = (ps->stationary ? 0 : ps->emitterX) +
                  cfg->sourcePositionVariancex * rand_minus1_1() * ps->scale;
 
-    d->posy[i] = ps->emitterY +
+    d->posy[i] = (ps->stationary ? 0 : ps->emitterY) +
                  cfg->sourcePositionVariancey * rand_minus1_1() * ps->scale;
 
     // Angle and speed
@@ -369,7 +369,7 @@ void initParticleSystem(ParticleSystem* ps, const ParticleDefinition* cfg) {
 
     // Basic state
     ps->active = true;
-    ps->emitting = true;
+    ps->emitting = false;
     ps->gravityFlipped = false;
     ps->elapsed = 0.0f;
     ps->duration = cfg->duration;
@@ -431,7 +431,7 @@ void freeParticleData(ParticleData* d) {
     free(d->deltaRadius);
 }
 
-void drawParticleSystem(ParticleSystem* ps, bool isStationary, float x_offset, float y_offset, float opacity) {
+void drawParticleSystem(ParticleSystem* ps, float x_offset, float y_offset, float opacity) {
     if (particlesDisabled) return;
     
     ParticleData* d = &ps->data;
@@ -450,9 +450,12 @@ void drawParticleSystem(ParticleSystem* ps, bool isStationary, float x_offset, f
         u32 color = C2D_Color32f(r, g, b, a * opacity);
 
         // If stationary, dont convert to screen space
-        if (!isStationary) {
+        if (!ps->stationary) {
             x = ((x - state.camera_x));
             y = GSP_SCREEN_WIDTH - ((y - state.camera_y));  
+        } else {
+            x += ps->emitterX;
+            y += ps->emitterY;
         }
 
         // Draw centered square

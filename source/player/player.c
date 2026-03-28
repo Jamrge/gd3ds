@@ -25,6 +25,7 @@ MotionTrail wave_trail_p2;
 
 ParticleSystem drag_particles;
 ParticleSystem drag_particles_2;
+ParticleSystem burst_particles;
 
 int frame_skipped = 0;
 
@@ -317,6 +318,7 @@ void ufo_gamemode(Player *player) {
         player->vel_y = fmaxf(player->vel_y, player->mini ? 358.992 : 371.034);
         player->buffering_state = BUFFER_END;
         player->ufo_last_y = player->y;
+        player->burst_particle_timer = BURST_PARTICLES_DURATION;
     } else {
         if (!state.dual) {
             if (player->vel_y > grav(player, 103.485494)) {
@@ -332,6 +334,17 @@ void ufo_gamemode(Player *player) {
             }
         }
     }
+
+    if (player->burst_particle_timer > 0) {
+        player->burst_particle_timer -= STEPS_DT;
+    }
+
+    burst_particles.emitterX = player->x;
+    burst_particles.emitterY = fabsf(gravBottom(player)) + (player->upside_down ? -4 : 4);
+    burst_particles.emitting = player->burst_particle_timer > 0;
+
+    burst_particles.gravityFlipped = player->upside_down;
+    burst_particles.scale = (player->mini ? 0.6f : 1.0f);
 
     if (player->on_ground) {
         player->ufo_last_y = player->y;
@@ -405,9 +418,6 @@ void run_player(Player *player) {
             player->time_since_ground = 0; 
         } 
     }
-
-    drag_particles.emitting = false;
-    drag_particles_2.emitting = false;
 
     switch (player->gamemode) {
         case GAMEMODE_PLAYER:

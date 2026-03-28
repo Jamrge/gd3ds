@@ -17,6 +17,8 @@ extern int frame_skipped;
 #define P1_TRAIL_DURATION 0.45f
 #define P1_TRAIL_END_SCALE 0.8f
 
+#define BURST_PARTICLES_DURATION 0.15f
+
 typedef struct {
     int slope_id;
     float elapsed;
@@ -101,6 +103,8 @@ typedef struct {
 
     int gravObj_id;
 
+    float burst_particle_timer;
+
     float cutscene_initial_player_x;
     float cutscene_initial_player_y;
 
@@ -145,6 +149,7 @@ extern MotionTrail wave_trail_p2;
 
 extern ParticleSystem drag_particles;
 extern ParticleSystem drag_particles_2;
+extern ParticleSystem burst_particles;
 
 extern const float player_speeds[SPEED_COUNT];
 

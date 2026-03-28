@@ -64,6 +64,7 @@ typedef struct {
 
     float scale;
 
+    bool stationary;
     bool gravityFlipped;
     bool active;
     bool emitting;
@@ -72,5 +73,5 @@ typedef struct {
 void updateParticleSystem(ParticleSystem* ps, float dt);
 void initParticleData(ParticleData* d, int capacity);
 void initParticleSystem(ParticleSystem* ps, const ParticleDefinition* cfg);
-void drawParticleSystem(ParticleSystem* ps, bool isStationary, float x_offset, float y_offset, float opacity);
+void drawParticleSystem(ParticleSystem* ps, float x_offset, float y_offset, float opacity);
 void freeParticleData(ParticleData* d);
