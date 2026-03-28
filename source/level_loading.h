@@ -94,6 +94,8 @@ typedef struct {
     bool initial_upsidedown;
     bool level_is_empty;
     bool level_is_custom;
+
+    char *level_name;
 } LoadedLevelInfo;
 
 extern LoadedLevelInfo level_info;

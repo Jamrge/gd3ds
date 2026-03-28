@@ -14,6 +14,8 @@ extern unsigned int frame_counter;
 
 extern unsigned int level_frame;
 
+extern bool exiting_level;
+
 #define SCREEN_WIDTH  400
 #define SCREEN_HEIGHT 240
 

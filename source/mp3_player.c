@@ -303,6 +303,16 @@ void toggle_playback_mp3() {
     ndspChnSetPaused(MUSIC_CHANNEL, paused);
 }
 
+void pause_playback_mp3() {
+    paused = true;
+    ndspChnSetPaused(MUSIC_CHANNEL, paused);
+}
+
+void unpause_playback_mp3() {
+    paused = false;
+    ndspChnSetPaused(MUSIC_CHANNEL, paused);
+}
+
 // Stop playback
 void stop_mp3() {
     if (!quit && threadId) {

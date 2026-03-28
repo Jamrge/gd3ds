@@ -243,6 +243,6 @@ void init_variables() {
 }
 
 void handle_death() {
-    toggle_playback_mp3();
+    pause_playback_mp3();
     seek_mp3(0);
 }

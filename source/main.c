@@ -138,8 +138,12 @@ float delta = 0;
 unsigned int level_frame = 0;
 unsigned int frame_counter = 0;
 
+bool exiting_level = false;
+
 void game_loop() {
+    // TODO: make this support external levels
     int returned = load_level(main_levels[curr_level_id].gmd_path);
+    level_info.level_name = main_levels[curr_level_id].level_name;
     if (returned) {
         printf("\x1b[9;1HFailed %d", returned);
         game_state = STATE_LEVEL_SELECT;
@@ -147,7 +151,7 @@ void game_loop() {
     }
 
     returned = play_mp3(main_levels[curr_level_id].song_path, false);
-    toggle_playback_mp3();
+    pause_playback_mp3();
 
     state.camera_x = 0;
     state.camera_y = 0;
@@ -156,7 +160,6 @@ void game_loop() {
     set_fade_status(FADE_STATUS_IN);
 
     bool being_faded = true;
-    bool exiting = false;
 
     init_variables();
 
@@ -169,10 +172,13 @@ void game_loop() {
     drag_particles.cfg.startColorGreen = get_white_if_black(p1_color).g / 255.f;
     drag_particles.cfg.startColorBlue  = get_white_if_black(p1_color).b / 255.f;
 
+    exiting_level = false;
+
     float accumulator = 0.0f;
     u64 lastTime = svcGetSystemTick();
     u64 start = svcGetSystemTick();
     bool fixed_dt = true;
+    bool old_wide = wideEnabled;
 
     // Main loop
     while (aptMainLoop()) {
@@ -185,10 +191,13 @@ void game_loop() {
         // Respond to user input
         u32 kDown = hidKeysDown();
         if (kDown & KEY_START) {
-            exiting = true;
-            set_fade_status(FADE_STATUS_OUT);
+            if (game_paused) {
+                unpause_game();
+            } else {
+                pause_game();
+            }
         }
-            
+
         if (kDown & KEY_X)
             state.noclip ^= 1;
 
@@ -225,92 +234,104 @@ void game_loop() {
                 if (!being_faded) fixed_dt = false;
             }
 
-            accumulator += delta;
+            if (!game_paused) {
+                accumulator += delta;
+                // Run simulation in fixed steps
+                while (accumulator >= STEPS_DT_UNMOD) {
+                    u64 start_physics = svcGetSystemTick();
+                    state.current_player = 0;
+                    state.old_player = state.player;
+                    
+                    trail = &trail_p1;
+                    wave_trail = &wave_trail_p1;
+                    handle_player(&state.player);
+                    handle_mirror_transition();
 
-            // Run simulation in fixed steps
-            while (accumulator >= STEPS_DT_UNMOD) {
-                u64 start_physics = svcGetSystemTick();
-                state.current_player = 0;
-                state.old_player = state.player;
-                
-                trail = &trail_p1;
-                wave_trail = &wave_trail_p1;
-                handle_player(&state.player);
-                handle_mirror_transition();
-
-                state.level_progress = (state.player.x / level_info.last_obj_x) * 100;
-
-                if (state.dead) break;
-
-                if (state.dual) {
-                    // Run second player
-                    state.old_player = state.player2;
-                    state.current_player = 1;
-                    trail = &trail_p2;
-                    wave_trail = &wave_trail_p2;
-                    handle_player(&state.player2);
+                    state.level_progress = (state.player.x / level_info.last_obj_x) * 100;
 
                     if (state.dead) break;
+
+                    if (state.dual) {
+                        // Run second player
+                        state.old_player = state.player2;
+                        state.current_player = 1;
+                        trail = &trail_p2;
+                        wave_trail = &wave_trail_p2;
+                        handle_player(&state.player2);
+
+                        if (state.dead) break;
+                    }
+                    
+                    run_camera();
+
+                    u64 end_physics = svcGetSystemTick();
+                    float physics_time = (end_physics - start_physics) / (CPU_TICKS_PER_MSEC);
+
+                    if (physics_time / 1000 >= STEPS_DT_UNMOD) {
+                        frame_skipped = (int) ((physics_time / 1000) * STEPS_HZ);
+                    }
+                    else frame_skipped = 0;
+
+                    physics_calc_time += physics_time;
+
+                    accumulator -= STEPS_DT;
+                    steps++;
+                    level_frame++;
                 }
-                
-                run_camera();
-
-                u64 end_physics = svcGetSystemTick();
-                float physics_time = (end_physics - start_physics) / (CPU_TICKS_PER_MSEC);
-
-                if (physics_time / 1000 >= STEPS_DT_UNMOD) {
-                    frame_skipped = (int) ((physics_time / 1000) * STEPS_HZ);
-                }
-                else frame_skipped = 0;
-
-                physics_calc_time += physics_time;
-
-                accumulator -= STEPS_DT;
-                steps++;
-                level_frame++;
             }
         }
         
         frame_counter++;
 
-        if (state.dead && state.death_timer <= 0.f) {
-            state.death_timer = 1.f;
-            handle_death();
-            state.dead = false;
-        }
-
-        if (state.death_timer > 0.f) {
-            state.death_timer -= DT;
-
-            if (state.death_timer <= 0.f) {
-                init_variables();
-                reload_level(); 
-                toggle_playback_mp3();
-                fixed_dt = true; 
+        if (!game_paused) {
+            if (state.dead && state.death_timer <= 0.f) {
+                state.death_timer = 1.f;
+                handle_death();
+                state.dead = false;
             }
+
+            if (state.death_timer > 0.f) {
+                state.death_timer -= DT;
+
+                if (state.death_timer <= 0.f) {
+                    init_variables();
+                    reload_level(); 
+                    unpause_playback_mp3();
+                    fixed_dt = true; 
+                }
+            }
+
+            u64 start_trig = svcGetSystemTick();
+            handle_triggers();
+            handle_col_triggers();
+            calculate_lbg();
+            u64 end_trig = svcGetSystemTick();
+            u64 ticks_trig = end_trig - start_trig;
+            triggers_time = ticks_trig / CPU_TICKS_PER_MSEC;
+
+            u64 start_obj = svcGetSystemTick();
+            create_objects();
+            u64 end_obj = svcGetSystemTick();
+            u64 ticks_obj = end_obj - start_obj;
+            sprite_drawing_time = ticks_obj / CPU_TICKS_PER_MSEC;
+
+            u64 start_part = svcGetSystemTick();
+            updateParticleSystem(&drag_particles, delta);
+            updateParticleSystem(&drag_particles_2, delta);
+            update_object_particles();
+            u64 end_part = svcGetSystemTick();
+            u64 ticks_part = end_part - start_part;
+            particle_calc_time = ticks_part / CPU_TICKS_PER_MSEC;
         }
+        
 
-        u64 start_trig = svcGetSystemTick();
-        handle_triggers();
-        handle_col_triggers();
-        calculate_lbg();
-        u64 end_trig = svcGetSystemTick();
-        u64 ticks_trig = end_trig - start_trig;
-        triggers_time = ticks_trig / CPU_TICKS_PER_MSEC;
-
-        u64 start_obj = svcGetSystemTick();
-        create_objects();
-        u64 end_obj = svcGetSystemTick();
-        u64 ticks_obj = end_obj - start_obj;
-        sprite_drawing_time = ticks_obj / CPU_TICKS_PER_MSEC;
-
-        u64 start_part = svcGetSystemTick();
-        updateParticleSystem(&drag_particles, delta);
-        updateParticleSystem(&drag_particles_2, delta);
-        update_object_particles();
-        u64 end_part = svcGetSystemTick();
-        u64 ticks_part = end_part - start_part;
-        particle_calc_time = ticks_part / CPU_TICKS_PER_MSEC;
+        if (wideEnabled != old_wide) {        
+            gspWaitForVBlank();
+            set_wide(wideEnabled);
+            gspWaitForVBlank();
+            reinitialize_screens();
+            old_wide = wideEnabled;
+        }
         
         u64 end = svcGetSystemTick();
         u64 ticks = end - start;
@@ -379,15 +400,13 @@ void game_loop() {
         } while (handle_fading());
 
         if (being_faded) {
-            toggle_playback_mp3();
+            unpause_playback_mp3();
             being_faded = false;
         }
 
-        if (exiting) {
-            // If death timer is set, the music is muted, unmute it
-            if (state.death_timer > 0) {
-                toggle_playback_mp3();
-            }
+        if (exiting_level) {
+            game_paused = false;
+            unpause_playback_mp3();
             break;
         }
     }

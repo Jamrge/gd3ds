@@ -1076,6 +1076,8 @@ void set_color_channels() {
     }
 }
 
+const char *default_name = "Unknown";
+
 void load_level_info(char *data, char *level_string) {
     char *gmd_song_id = extract_gmd_key((const char *) data, "k8", "i");
     if (!gmd_song_id) {
@@ -1157,6 +1159,13 @@ void load_level_info(char *data, char *level_string) {
         free(upsidedown_data);
     } else {
         level_info.initial_upsidedown = 0; 
+    }
+
+    char *level_name_data = extract_gmd_key((const char *) data, "k2", "s");
+    if (upsidedown_data) {
+        level_info.level_name = level_name_data;
+    } else {
+        level_info.level_name = default_name;
     }
 }
 

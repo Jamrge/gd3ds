@@ -27,18 +27,11 @@ const Glyph *get_glyph(Charset font, char character) {
     return NULL;
 }
 
-float get_text_length(Charset font, const float zoom_x, const char *text, ...) {
-    
-    char tmp[1024];
-
-    va_list argp;
-    va_start(argp, text);
-    const int size = vsnprintf(tmp, sizeof(tmp), text, argp);
-    va_end(argp);
-    
+float get_text_length(Charset font, const float zoom_x, const char *text) {
     float text_length = 0;
+    int size = strlen(text);
     for (int i = 0; i < size; i++) {
-        const Glyph *character = get_glyph(font, tmp[i]);
+        const Glyph *character = get_glyph(font, text[i]);
 
         if (character != NULL) {
             float xadvance = character->xAdvance * zoom_x;
