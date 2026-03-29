@@ -1,6 +1,8 @@
 #pragma once
 #include <citro2d.h>
 #include "level_loading.h"
+#include "wav_player.h"
+
 
 #define CAM_SPEED 5.19300155f
 
@@ -32,6 +34,10 @@ extern C3D_RenderTarget* bot;
 
 extern int game_state;
 extern bool playing_menu_loop;
+
+extern SFX play_sound;
+extern SFX quit_sound;
+extern SFX explode_sound;
 
 int output_log(const char *fmt, ...);
 

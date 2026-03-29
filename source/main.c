@@ -48,6 +48,10 @@ PrintConsole console;
 C3D_RenderTarget* top;
 C3D_RenderTarget* bot;
 
+SFX play_sound;
+SFX quit_sound;
+SFX explode_sound;
+
 bool is_citra() {
     s64 version = 0;
     svcGetSystemInfo(&version, CITRA_TYPE, CITRA_VERSION);
@@ -540,6 +544,11 @@ void game_assets_init() {
     if (!trailSheet) svcBreak(USERBREAK_PANIC);
 }
 
+void load_sfx() {
+    load_wav("romfs:/sfx/playSound_01.wav", &play_sound);
+    load_wav("romfs:/sfx/quitSound_01.wav", &quit_sound);
+    load_wav("romfs:/sfx/explode_11.wav", &explode_sound);
+}
 
 int main(int argc, char* argv[]) {
     // Init libs
@@ -563,6 +572,8 @@ int main(int argc, char* argv[]) {
 
     cache_all_sprites();
     update_player_colors();
+
+    load_sfx();
 
     srand(time(NULL));
 

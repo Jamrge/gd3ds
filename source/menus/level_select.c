@@ -117,6 +117,7 @@ void update_level_face(int level) {
 }
 
 void action_open_level(UIElement* e) { 
+    play_sfx(&play_sound, 1);
     set_fade_status(FADE_STATUS_OUT);
     start_level = true; 
 };
@@ -295,6 +296,7 @@ void level_select_loop() {
 
         ui_screen_update(&screen, &touch);
         ui_screen_update(&screen_top, &touch);
+        
         do {
             C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
             

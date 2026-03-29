@@ -54,6 +54,7 @@ void unpause_game() {
 }
 
 void exit_level() {
+    play_sfx(&quit_sound, 1);
     exiting_level = true;
     set_fade_status(FADE_STATUS_OUT);
 }
