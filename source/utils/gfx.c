@@ -386,3 +386,62 @@ void draw_hitbox_line_inward(Vec2D rect[4],
         0.0f
     );
 }
+
+void custom_ellipse(float x, float y, float radiusX,
+                    float radiusY, u32 color, bool filled,
+                    float lineWidth) {
+    int segments = (int)(MAX(radiusX, radiusY) * 0.75f);
+    segments = CLAMP(segments, 12, 256);
+
+    float prevX = x + radiusX;
+    float prevY = y;
+
+    if (filled) {
+        // Triangle fan style (center -> edge points)
+        for (int i = 0; i < segments; i++) {
+            float angle1 = i * 2.0f * M_PI / segments;
+            float angle2 = (i + 1) * 2.0f * M_PI / segments;
+
+            float x1 = cosf(angle1) * radiusX + x;
+            float y1 = sinf(angle1) * radiusY + y;
+
+            float x2 = cosf(angle2) * radiusX + x;
+            float y2 = sinf(angle2) * radiusY + y;
+
+            // Draw triangle (center, p1, p2)
+            C2D_DrawTriangle(
+                x, y, color,
+                x1, y1, color,
+                x2, y2, color,
+                0
+            );
+        }
+    } else {
+        // Outline using lines
+        for (int i = 1; i <= segments; i++) {
+            float angle = i * 2.0f * M_PI / segments;
+
+            float currX = cosf(angle) * radiusX + x;
+            float currY = sinf(angle) * radiusY + y;
+
+            C2D_DrawLine(
+                prevX, prevY, color,
+                currX, currY, color,
+                lineWidth, 0
+            );
+
+            prevX = currX;
+            prevY = currY;
+        }
+    }
+}
+
+void custom_circle (const float x, const float y, const float radius,
+                     const u32 color) {
+    custom_ellipse(x, y, radius, radius, color, true, 1);
+}
+
+void custom_circunference (const float x, const float y, const float radius,
+                     const u32 color, const float lineWidth) {
+    custom_ellipse(x, y, radius, radius, color, false, lineWidth);
+}

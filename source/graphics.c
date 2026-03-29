@@ -16,6 +16,7 @@
 #include "utils/gfx.h"
 
 #include "particles/object_particles.h"
+#include "particles/circles.h"
 
 const Color white = { 255, 255, 255 };
 
@@ -1010,6 +1011,7 @@ void draw_objects() {
 */
         } else {   
             change_blending(true);
+            draw_use_effects();
             draw_object_particles();
             for (int i = 0; i < 2; i++) {
                 drawParticleSystem(&drag_particles[i], 0, 0, 1.f);

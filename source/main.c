@@ -34,7 +34,7 @@
 #include <stdarg.h>
 
 #include "player/player.h"
-
+#include "particles/circles.h"
 
 #define CITRA_TYPE 0x20000
 #define CITRA_VERSION 11
@@ -400,6 +400,7 @@ void game_loop() {
                 updateParticleSystem(&burst_particles[i], delta);
             }
             updateParticleSystem(&brick_destroy_particles, delta);
+            update_use_effects(delta);
             update_object_particles();
             u64 end_part = svcGetSystemTick();
             u64 ticks_part = end_part - start_part;
