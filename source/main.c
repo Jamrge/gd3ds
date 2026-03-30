@@ -212,10 +212,17 @@ void game_loop() {
     burst_particles[0].cfg.startColorRed   = p1_not_white.r / 255.f;
     burst_particles[0].cfg.startColorGreen = p1_not_white.g / 255.f;
     burst_particles[0].cfg.startColorBlue  = p1_not_white.b / 255.f;
+    burst_particles[0].cfg.finishColorRed   = p1_not_white.r / 255.f;
+    burst_particles[0].cfg.finishColorGreen = p1_not_white.g / 255.f;
+    burst_particles[0].cfg.finishColorBlue  = p1_not_white.b / 255.f;
 
     burst_particles[1].cfg.startColorRed   = p2_not_white.r / 255.f;
     burst_particles[1].cfg.startColorGreen = p2_not_white.g / 255.f;
     burst_particles[1].cfg.startColorBlue  = p2_not_white.b / 255.f;
+    
+    burst_particles[1].cfg.finishColorRed   = p2_not_white.r / 255.f;
+    burst_particles[1].cfg.finishColorGreen = p2_not_white.g / 255.f;
+    burst_particles[1].cfg.finishColorBlue  = p2_not_white.b / 255.f;
 
     secondary_particles[0].cfg.startColorRed   = p2_not_white.r / 255.f;
     secondary_particles[0].cfg.startColorGreen = p2_not_white.g / 255.f;
