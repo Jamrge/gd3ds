@@ -1038,7 +1038,7 @@ void draw_objects() {
 */
         } else {   
             change_blending(true);
-            draw_use_effects();
+            draw_use_effects(GFX_TOP);
             draw_object_particles();
             for (int i = 0; i < 2; i++) {
                 drawParticleSystem(&drag_particles[i], 0, 0, 1.f);
@@ -1095,6 +1095,41 @@ void draw_objects() {
     u64 end = svcGetSystemTick();
     u64 ticks = end - start;
     object_drawing_time = ticks / CPU_TICKS_PER_MSEC;
+}
+
+void update_touch_effect(float delta) {
+    touchPosition pos;
+    hidTouchRead(&pos);
+
+    u32 kDown = hidKeysDown();
+    u32 kHeld = hidKeysHeld();
+
+    touch_particles.emitting = false;
+
+    if ((kHeld & KEY_TOUCH) && !get_fade_status()) {
+        // Use effect
+        if (kDown & KEY_TOUCH) {
+            UseEffect *effect = add_use_effect(pos.px, pos.py, &pad_use_effect, GFX_BOTTOM);
+            if (effect) {
+                Color p1_not_white = get_white_if_black(p1_color);
+
+                effect->def.colorR = p1_not_white.r / 255.f;
+                effect->def.colorG = p1_not_white.g / 255.f;
+                effect->def.colorB = p1_not_white.b / 255.f;
+            }
+        }
+        
+        touch_particles.emitterX = pos.px;
+        touch_particles.emitterY = pos.py;
+        touch_particles.emitting = true;
+    }
+    update_use_effects(delta, GFX_BOTTOM);
+    updateParticleSystem(&touch_particles, delta);
+}
+
+void draw_touch_effect() {
+    draw_use_effects(GFX_BOTTOM);
+    drawParticleSystem(&touch_particles, 0, 0, 1.f);
 }
 
 void spawn_icon_at(

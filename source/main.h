@@ -3,6 +3,8 @@
 #include "level_loading.h"
 #include "wav_player.h"
 
+#include "particles/particles.h"
+
 
 #define CAM_SPEED 5.19300155f
 
@@ -17,6 +19,8 @@ extern unsigned int frame_counter;
 extern unsigned int level_frame;
 
 extern bool exiting_level;
+
+extern ParticleSystem touch_particles;
 
 #define SCREEN_WIDTH  400
 #define SCREEN_HEIGHT 240

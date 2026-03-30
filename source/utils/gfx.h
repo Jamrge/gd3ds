@@ -29,6 +29,7 @@ float calc_y_on_screen(float val);
 bool handle_fading();
 void draw_fade();
 void set_fade_status(int status);
+int get_fade_status();
 C3D_RenderTarget* C2D_CreateScreenTargetExt(gfxScreen_t screen, gfx3dSide_t side, bool aa);
 
 void set_wide(bool wide);

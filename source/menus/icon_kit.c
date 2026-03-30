@@ -244,6 +244,8 @@ void icon_kit_loop() {
         if (!in_palette_kit) ui_screen_update(&screen, &touch);
         ui_screen_update(&screen_top, &touch);
         do {
+            update_touch_effect(DT);
+            
             C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
             
             // Bottom screen
@@ -258,6 +260,10 @@ void icon_kit_loop() {
                     in_palette_kit = false;
                 }
             }
+
+            change_blending(true);
+            draw_touch_effect();
+            change_blending(false);
 
             // Top screen
             C2D_TargetClear(top, C2D_Color32(0, 0, 0, 255));

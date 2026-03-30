@@ -463,13 +463,15 @@ void drawParticleSystem(ParticleSystem* ps, float x_offset, float y_offset, floa
 
         u32 color = C2D_Color32f(r, g, b, a * opacity);
 
-        // If stationary, dont convert to screen space
-        if (!ps->stationary) {
-            x = ((x - state.camera_x));
-            y = GSP_SCREEN_WIDTH - ((y - state.camera_y));  
-        } else {
-            x += ps->emitterX;
-            y += ps->emitterY;
+        if (!ps->relativeStationary) {
+            // If stationary, dont convert to screen space
+            if (!ps->stationary) {
+                x = ((x - state.camera_x));
+                y = GSP_SCREEN_WIDTH - ((y - state.camera_y));  
+            } else {
+                x += ps->emitterX;
+                y += ps->emitterY;
+            }
         }
 
         // Draw centered square

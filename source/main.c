@@ -52,6 +52,8 @@ SFX play_sound;
 SFX quit_sound;
 SFX explode_sound;
 
+ParticleSystem touch_particles;
+
 bool is_citra() {
     s64 version = 0;
     svcGetSystemInfo(&version, CITRA_TYPE, CITRA_VERSION);
@@ -166,8 +168,6 @@ void game_loop() {
     bool being_faded = true;
 
     init_variables();
-
-    make_opacity_lut();
 
     init_op_system();
 
@@ -422,7 +422,7 @@ void game_loop() {
             }
             updateParticleSystem(&brick_destroy_particles, delta);
             updateParticleSystem(&glitter_particles, delta);
-            update_use_effects(delta);
+            update_use_effects(delta, GFX_TOP);
             update_object_particles();
             u64 end_part = svcGetSystemTick();
             u64 ticks_part = end_part - start_part;
@@ -440,7 +440,6 @@ void game_loop() {
             }
         }
         
-
         if (wideEnabled != old_wide) {        
             gspWaitForVBlank();
             set_wide(wideEnabled);
@@ -454,6 +453,8 @@ void game_loop() {
 
         // Render the scene
         do {
+            update_touch_effect(delta);
+
             C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
             C3D_AlphaBlend(GPU_BLEND_ADD, GPU_BLEND_ADD, GPU_SRC_ALPHA, GPU_ONE_MINUS_SRC_ALPHA, GPU_ONE, GPU_ZERO);
             draw_fade();
@@ -482,6 +483,10 @@ void game_loop() {
             C2D_TargetClear(bot, C2D_Color32(0, 0, 0, 255));
 
             gameplay_screen_bot_loop();
+
+            change_blending(true);
+            draw_touch_effect();
+            change_blending(false);
 
             if (state.profiling) {
                 float processingTime = ((ticks / CPU_TICKS_PER_MSEC)) * 6;
@@ -570,6 +575,9 @@ void game_assets_init() {
 
     trailSheet = C2D_SpriteSheetLoad("romfs:/gfx/trails.t3x");
     if (!trailSheet) svcBreak(USERBREAK_PANIC);
+
+    initParticleSystem(&touch_particles, &drag_effect);
+    touch_particles.relativeStationary = true;
 }
 
 void load_sfx() {
@@ -601,6 +609,8 @@ int main(int argc, char* argv[]) {
     cache_all_sprites();
     update_player_colors();
 
+    make_opacity_lut();
+
     load_sfx();
 
     srand(time(NULL));
@@ -612,6 +622,12 @@ int main(int argc, char* argv[]) {
 
     bool exit = false;
     while (aptMainLoop() && !exit) {
+        // Update color if changed menus
+        Color p1_not_white = get_white_if_black(p1_color);
+
+        touch_particles.cfg.startColorRed   = p1_not_white.r / 255.f;
+        touch_particles.cfg.startColorGreen = p1_not_white.g / 255.f;
+        touch_particles.cfg.startColorBlue  = p1_not_white.b / 255.f;
         switch (game_state) {
             case STATE_MAIN_MENU:
                 main_menu_loop();

@@ -149,3 +149,6 @@ void handle_mirror_transition();
 
 void make_opacity_lut();
 float get_opacity(float opacity);
+
+void update_touch_effect(float delta);
+void draw_touch_effect();

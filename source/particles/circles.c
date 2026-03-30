@@ -54,11 +54,14 @@ const UseEffectDefinition portal_use_effect = {
     .end_rad_ease = EASE_LINEAR,
 };
 
-UseEffect use_effects[MAX_USE_EFFECTS];
+UseEffect use_effects_top[MAX_USE_EFFECTS];
+UseEffect use_effects_bot[MAX_USE_EFFECTS];
 
-UseEffect *add_use_effect(float x, float y, const UseEffectDefinition *def) {
+UseEffect *add_use_effect(float x, float y, const UseEffectDefinition *def, int screen) {
+    UseEffect *ptr = (screen == GFX_TOP) ? use_effects_top : use_effects_bot;
+
     for (size_t i = 0; i < MAX_USE_EFFECTS; i++) {
-        UseEffect *effect = &use_effects[i];
+        UseEffect *effect = &ptr[i];
         if (!effect->active) {
             effect->active = true;
 
@@ -78,9 +81,10 @@ UseEffect *add_use_effect(float x, float y, const UseEffectDefinition *def) {
     return NULL;
 }
 
-void update_use_effects(float delta) {
+void update_use_effects(float delta, int screen) {
+    UseEffect *ptr = (screen == GFX_TOP) ? use_effects_top : use_effects_bot;
     for (size_t i = 0; i < MAX_USE_EFFECTS; i++) {
-        UseEffect *effect = &use_effects[i];
+        UseEffect *effect = &ptr[i];
         if (effect->active) {
             float progress = (effect->elapsed / effect->def.duration);
             float duration_halved = effect->def.duration / 2;
@@ -130,9 +134,10 @@ void update_use_effects(float delta) {
     }
 }
 
-void draw_use_effects() {
+void draw_use_effects(int screen) {
+    UseEffect *ptr = (screen == GFX_TOP) ? use_effects_top : use_effects_bot;
     for (size_t i = 0; i < MAX_USE_EFFECTS; i++) {
-        UseEffect *effect = &use_effects[i];
+        UseEffect *effect = &ptr[i];
         if (effect->active) {
             float x = effect->x;
             float y = effect->y;
@@ -146,9 +151,10 @@ void draw_use_effects() {
             u32 color = C2D_Color32f(r, g, b, a);
 
             // If stationary, dont convert to screen space
-            
-            x = get_mirror_x((x - state.camera_x), state.mirror_factor);
-            y = GSP_SCREEN_WIDTH - ((y - state.camera_y));  
+            if (screen == GFX_TOP) {
+                x = get_mirror_x((x - state.camera_x), state.mirror_factor);
+                y = GSP_SCREEN_WIDTH - ((y - state.camera_y));  
+            }
 
             if (effect->def.hollow) {
                 custom_circunference(x, y, size, color, 2);

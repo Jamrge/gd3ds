@@ -65,6 +65,7 @@ typedef struct {
     float scale;
 
     bool stationary;
+    bool relativeStationary;
     bool gravityFlipped;
     bool active;
     bool emitting;

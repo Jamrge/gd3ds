@@ -202,6 +202,10 @@ void set_fade_status(int status) {
     fade_status = status;
 }
 
+int get_fade_status() {
+    return fade_status;
+}
+
 void reinitialize_screens() {
     C3D_RenderTargetDelete(top);
     C3D_RenderTargetDelete(bot);

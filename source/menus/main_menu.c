@@ -129,6 +129,7 @@ void main_menu_loop() {
         if (!in_settings) ui_screen_update(&screen, &touch);
         ui_screen_update(&screen_top, &touch);
         do {
+            update_touch_effect(DT);
             bg_scroll += 5.19300155f;
             C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
             
@@ -157,6 +158,9 @@ void main_menu_loop() {
                     in_settings = false;
                 }
             }
+            change_blending(true);
+            draw_touch_effect();
+            change_blending(false);
 
             C2D_ViewReset();
 
