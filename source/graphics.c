@@ -1110,7 +1110,7 @@ void update_touch_effect(float delta) {
     if ((kHeld & KEY_TOUCH) && !get_fade_status()) {
         // Use effect
         if (kDown & KEY_TOUCH) {
-            UseEffect *effect = add_use_effect(pos.px, pos.py, &pad_use_effect, GFX_BOTTOM);
+            UseEffect *effect = add_use_effect(pos.px, pos.py, -1, &pad_use_effect, GFX_BOTTOM);
             if (effect) {
                 Color p1_not_white = get_white_if_black(p1_color);
 

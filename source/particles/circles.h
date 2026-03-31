@@ -42,6 +42,8 @@ typedef struct {
     
     UseEffectDefinition def;
 
+    int obj;
+
     bool active;
 } UseEffect;
 
@@ -51,6 +53,6 @@ extern const UseEffectDefinition orb_collide_effect;
 extern const UseEffectDefinition portal_use_effect;
 extern const UseEffectDefinition death_effect;
 
-UseEffect *add_use_effect(float x, float y, const UseEffectDefinition *def, int screen);
+UseEffect *add_use_effect(float x, float y, int obj, const UseEffectDefinition *def, int screen);
 void update_use_effects(float delta, int screen);
 void draw_use_effects(int screen);

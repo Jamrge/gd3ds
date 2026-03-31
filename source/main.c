@@ -411,6 +411,26 @@ void game_loop() {
             if (state.death_timer > 0.f) {
                 state.death_timer -= DT;
 
+                fade_to_amplitude(0);
+
+                if (state.player.gamemode == GAMEMODE_DART) {
+                    if (wave_trail_p1.opacity > 0) wave_trail_p1.opacity -= 0.02f * 4;
+            
+                    if (wave_trail_p1.opacity <= 0) {
+                        wave_trail_p1.opacity = 0;
+                        wave_trail_p1.nuPoints = 0;
+                    }
+                }
+
+                if (state.player2.gamemode == GAMEMODE_DART) {
+                    if (wave_trail_p2.opacity > 0) wave_trail_p2.opacity -= 0.02f * 4;
+
+                    if (wave_trail_p2.opacity <= 0) {
+                        wave_trail_p2.opacity = 0;
+                        wave_trail_p2.nuPoints = 0;
+                    }
+                }
+
                 if (state.death_timer <= 0.f) {
                     init_variables();
                     reload_level(); 

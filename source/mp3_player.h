@@ -17,3 +17,4 @@ void stop_mp3();
 void toggle_playback_mp3();
 void pause_playback_mp3();
 void unpause_playback_mp3();
+void fade_to_amplitude(float new_amplitude);

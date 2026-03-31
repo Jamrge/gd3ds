@@ -2,6 +2,7 @@
 #include "easing.h"
 #include "utils/gfx.h"
 #include "state.h"
+#include "main.h"
 
 const UseEffectDefinition pad_use_effect = {
     .colorR = 1, 
@@ -89,7 +90,7 @@ const UseEffectDefinition death_effect = {
 UseEffect use_effects_top[MAX_USE_EFFECTS];
 UseEffect use_effects_bot[MAX_USE_EFFECTS];
 
-UseEffect *add_use_effect(float x, float y, const UseEffectDefinition *def, int screen) {
+UseEffect *add_use_effect(float x, float y, int obj, const UseEffectDefinition *def, int screen) {
     UseEffect *ptr = (screen == GFX_TOP) ? use_effects_top : use_effects_bot;
 
     for (size_t i = 0; i < MAX_USE_EFFECTS; i++) {
@@ -180,13 +181,30 @@ void draw_use_effects(int screen) {
             float b = effect->def.colorB;
             float a = effect->opacity;
 
-            u32 color = C2D_Color32f(r, g, b, a);
-
             // If stationary, dont convert to screen space
             if (screen == GFX_TOP) {
                 x = get_mirror_x((x - state.camera_x), state.mirror_factor);
                 y = GSP_SCREEN_WIDTH - ((y - state.camera_y));  
             }
+
+            float calc_x = x;
+            float calc_y = y;
+
+            int fade_x = 0;
+            int fade_y = 0;
+
+            float fade_scale = 1.f;
+            float opacity = 1.f;
+
+            if (screen == GFX_TOP) {
+                float fade_scale = 1.f;
+                get_fade_vars(effect->obj, calc_x, &fade_x, &fade_y, &fade_scale);
+
+                opacity = obj_edge_fade(calc_x, SCREEN_WIDTH / SCALE) / 255.f;
+            }
+
+            u32 color = C2D_Color32f(r, g, b, a * opacity);
+            
 
             if (effect->def.hollow) {
                 custom_circunference(x, y, size, color, effect->def.line_thickness);

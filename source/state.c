@@ -255,7 +255,7 @@ void handle_death() {
 
     Player *player = (state.current_player == 1) ? &state.player2 : &state.player;
 
-    UseEffect *effect = add_use_effect(player->x, player->y, &death_effect, GFX_TOP);
+    UseEffect *effect = add_use_effect(player->x, player->y, -1, &death_effect, GFX_TOP);
     if (effect) {
         Color color_not_white = get_white_if_black((state.current_player == 1 ? p2_color : p1_color));
 
@@ -267,4 +267,5 @@ void handle_death() {
     explosion_particles[state.current_player].emitterX = player->x;
     explosion_particles[state.current_player].emitterY = player->y;
     spawnMultipleParticles(&explosion_particles[state.current_player], 30);
+    
 }

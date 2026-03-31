@@ -313,6 +313,10 @@ void unpause_playback_mp3() {
     ndspChnSetPaused(MUSIC_CHANNEL, paused);
 }
 
+void fade_to_amplitude(float new_amplitude) {
+    amplitude = calculate_amplitude(new_amplitude);
+}
+
 // Stop playback
 void stop_mp3() {
     if (!quit && threadId) {

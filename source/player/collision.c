@@ -239,7 +239,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                 player->left_ground = true;
                 SET_ACTIVATED(obj, true);
                 update_rotation_direction(player);
-                add_use_effect(objects.x[obj], objects.y[obj], &pad_use_effect, GFX_TOP);
+                add_use_effect(objects.x[obj], objects.y[obj], obj, &pad_use_effect, GFX_TOP);
             }
             break;
         case PINK_PAD:
@@ -251,7 +251,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                 player->left_ground = true;
                 SET_ACTIVATED(obj, true);
                 update_rotation_direction(player);
-                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &pad_use_effect, GFX_TOP);
+                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &pad_use_effect, GFX_TOP);
                 if (effect) {
                     effect->def.colorR = 255 / 255.f;
                     effect->def.colorG = 31 / 255.f;
@@ -283,7 +283,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                 player->on_ground = false;
                 player->inverse_rotation = false;
 
-                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &pad_use_effect, GFX_TOP);
+                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &pad_use_effect, GFX_TOP);
                 if (effect) {
                     effect->def.colorR = 56 / 255.f;
                     effect->def.colorG = 200 / 255.f;
@@ -294,7 +294,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
             }
             break;
         case YELLOW_ORB:
-            if (!GET_COLLIDED(obj)) add_use_effect(objects.x[obj], objects.y[obj], &orb_collide_effect, GFX_TOP);
+            if (!GET_COLLIDED(obj)) add_use_effect(objects.x[obj], objects.y[obj], obj, &orb_collide_effect, GFX_TOP);
             if (!GET_ACTIVATED(obj) && (state.input.holdJump) && player->buffering_state == BUFFER_READY) {
                 MotionTrail_ResumeStroke(trail);
                 player->vel_y = jump_heights_table[state.speed][JUMP_YELLOW_ORB][player->gamemode][player->mini];
@@ -308,13 +308,13 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                 player->buffering_state = BUFFER_END;
                 update_rotation_direction(player);
                 
-                add_use_effect(objects.x[obj], objects.y[obj], &orb_use_effect, GFX_TOP);
+                add_use_effect(objects.x[obj], objects.y[obj], obj, &orb_use_effect, GFX_TOP);
                 
                 SET_ACTIVATED(obj, true);
             } 
             break;
         case PINK_ORB:
-            if (!GET_COLLIDED(obj)) add_use_effect(objects.x[obj], objects.y[obj], &orb_collide_effect, GFX_TOP);
+            if (!GET_COLLIDED(obj)) add_use_effect(objects.x[obj], objects.y[obj], obj, &orb_collide_effect, GFX_TOP);
             if (!GET_ACTIVATED(obj) && (state.input.holdJump) && player->buffering_state == BUFFER_READY) {
                 MotionTrail_ResumeStroke(trail);
                 player->vel_y = jump_heights_table[state.speed][JUMP_PINK_ORB][player->gamemode][player->mini];
@@ -328,7 +328,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                 player->buffering_state = BUFFER_END;
                 update_rotation_direction(player);
 
-                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &orb_use_effect, GFX_TOP);
+                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &orb_use_effect, GFX_TOP);
                 if (effect) {
                     effect->def.colorR = 255 / 255.f;
                     effect->def.colorG = 31 / 255.f;
@@ -339,7 +339,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
             } 
             break;
         case BLUE_ORB:
-            if (!GET_COLLIDED(obj)) add_use_effect(objects.x[obj], objects.y[obj], &orb_collide_effect, GFX_TOP);
+            if (!GET_COLLIDED(obj)) add_use_effect(objects.x[obj], objects.y[obj], obj, &orb_collide_effect, GFX_TOP);
             if (!GET_ACTIVATED(obj) && (state.input.holdJump) && player->buffering_state == BUFFER_READY) {    
                 MotionTrail_ResumeStroke(trail);
                 if (player->gamemode == GAMEMODE_DART) MotionTrail_AddWavePoint(wave_trail);
@@ -360,7 +360,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                 player->buffering_state = BUFFER_END;
                 player->ufo_last_y = player->y;
                 
-                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &orb_use_effect, GFX_TOP);
+                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &orb_use_effect, GFX_TOP);
                 if (effect) {
                     effect->def.colorR = 56 / 255.f;
                     effect->def.colorG = 200 / 255.f;
@@ -384,7 +384,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                     flip_other_player(state.current_player);
                     player->left_ground = true;
                     
-                    UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &portal_use_effect, GFX_TOP);
+                    UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &portal_use_effect, GFX_TOP);
                     if (effect) {
                         effect->def.colorR = 56 / 255.f;
                         effect->def.colorG = 200 / 255.f;
@@ -407,7 +407,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                     player->snap_rotation = true;
                     flip_other_player(state.current_player);
                     player->left_ground = true;
-                    add_use_effect(objects.x[obj], objects.y[obj], &portal_use_effect, GFX_TOP);
+                    add_use_effect(objects.x[obj], objects.y[obj], obj, &portal_use_effect, GFX_TOP);
                 }
                 SET_ACTIVATED(obj, true);
             } 
@@ -418,7 +418,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                 state.intended_mirror_factor = 1.f;
                 state.intended_mirror_speed_factor = -1.f;
 
-                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &portal_use_effect, GFX_TOP);
+                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &portal_use_effect, GFX_TOP);
                 if (effect) {
                     effect->def.colorR = 255 / 255.f;
                     effect->def.colorG = 127 / 255.f;
@@ -434,7 +434,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                 state.intended_mirror_factor = 0.f;
                 state.intended_mirror_speed_factor = 1.f;
                 
-                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &portal_use_effect, GFX_TOP);
+                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &portal_use_effect, GFX_TOP);
                 if (effect) {
                     effect->def.colorR = 56 / 255.f;
                     effect->def.colorG = 200 / 255.f;
@@ -449,7 +449,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
             if (!GET_ACTIVATED(obj)) {
                 set_mini(player, false);
                 
-                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &portal_use_effect, GFX_TOP);
+                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &portal_use_effect, GFX_TOP);
                 if (effect) {
                     effect->def.colorR = 0 / 255.f;
                     effect->def.colorG = 255 / 255.f;
@@ -463,7 +463,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
             if (!GET_ACTIVATED(obj)) {
                 set_mini(player, true);
                 
-                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &portal_use_effect, GFX_TOP);
+                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &portal_use_effect, GFX_TOP);
                 if (effect) {
                     effect->def.colorR = 255 / 255.f;
                     effect->def.colorG = 31 / 255.f;
@@ -476,28 +476,28 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
         case SLOW_SPEED_PORTAL:
             if (!GET_ACTIVATED(obj)) {
                 state.speed = SPEED_SLOW;
-                add_use_effect(objects.x[obj], objects.y[obj], &orb_collide_effect, GFX_TOP);
+                add_use_effect(objects.x[obj], objects.y[obj], obj, &orb_collide_effect, GFX_TOP);
                 SET_ACTIVATED(obj, true);
             }
             break;
         case NORMAL_SPEED_PORTAL:
             if (!GET_ACTIVATED(obj)) {
                 state.speed = SPEED_NORMAL;
-                add_use_effect(objects.x[obj], objects.y[obj], &orb_collide_effect, GFX_TOP);
+                add_use_effect(objects.x[obj], objects.y[obj], obj, &orb_collide_effect, GFX_TOP);
                 SET_ACTIVATED(obj, true);
             }
             break;
         case FAST_SPEED_PORTAL:
             if (!GET_ACTIVATED(obj)) {
                 state.speed = SPEED_FAST;
-                add_use_effect(objects.x[obj], objects.y[obj], &orb_collide_effect, GFX_TOP);
+                add_use_effect(objects.x[obj], objects.y[obj], obj, &orb_collide_effect, GFX_TOP);
                 SET_ACTIVATED(obj, true);
             }
             break;
         case FASTER_SPEED_PORTAL:
             if (!GET_ACTIVATED(obj)) {
                 state.speed = SPEED_FASTER;
-                add_use_effect(objects.x[obj], objects.y[obj], &orb_collide_effect, GFX_TOP);
+                add_use_effect(objects.x[obj], objects.y[obj], obj, &orb_collide_effect, GFX_TOP);
                 SET_ACTIVATED(obj, true);
             }
             break;
@@ -549,7 +549,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                         player->vel_y = max;
                     }
 
-                    UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &portal_use_effect, GFX_TOP);
+                    UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &portal_use_effect, GFX_TOP);
                     if (effect) {
                         effect->def.colorR = 255 / 255.f;
                         effect->def.colorG = 31 / 255.f;
@@ -587,7 +587,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                     player->snap_rotation = true;
                     flip_other_player(state.current_player ^ 1);
                 }
-                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &portal_use_effect, GFX_TOP);
+                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &portal_use_effect, GFX_TOP);
                 if (effect) {
                     effect->def.colorR = 255 / 255.f;
                     effect->def.colorG = 0 / 255.f;
@@ -619,7 +619,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                         player->buffering_state = BUFFER_READY;
                     }
 
-                    UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &portal_use_effect, GFX_TOP);
+                    UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &portal_use_effect, GFX_TOP);
                     if (effect) {
                         effect->def.colorR = 255 / 255.f;
                         effect->def.colorG = 127 / 255.f;
@@ -653,7 +653,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                     set_dual_bounds();
                 }
 
-                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &portal_use_effect, GFX_TOP);
+                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &portal_use_effect, GFX_TOP);
                 if (effect) {
                     effect->def.colorR = 56 / 255.f;
                     effect->def.colorG = 200 / 255.f;
@@ -679,7 +679,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                 }
                 MotionTrail_Init(&trail_p2, 0.3f, 3, 10.0f, false, get_white_if_black(p1_color), C2D_SpriteSheetGetImage(trailSheet, 0));
                 
-                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &portal_use_effect, GFX_TOP);
+                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &portal_use_effect, GFX_TOP);
                 if (effect) {
                     effect->def.colorR = 255 / 255.f;
                     effect->def.colorG = 127 / 255.f;
@@ -714,7 +714,7 @@ void handle_special_hitbox(Player *player, int obj, const ObjectHitbox *hitbox) 
                         set_intended_ceiling();
                 }
 
-                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], &portal_use_effect, GFX_TOP);
+                UseEffect *effect = add_use_effect(objects.x[obj], objects.y[obj], obj, &portal_use_effect, GFX_TOP);
                 if (effect) {
                     effect->def.colorR = 56 / 255.f;
                     effect->def.colorG = 200 / 255.f;
