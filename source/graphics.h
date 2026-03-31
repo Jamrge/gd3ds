@@ -145,6 +145,19 @@ void spawn_p1_layer_at(
     float scale,
     u32 p1_color
 );
+
+void spawn_glow_layer_at(
+    int gamemode,
+    int id,
+    float x,
+    float y,
+    float deg,
+    unsigned char flip_x,
+    unsigned char flip_y,
+    float scale,
+    u32 glow_color
+);
+
 void handle_mirror_transition();
 
 void make_opacity_lut();
