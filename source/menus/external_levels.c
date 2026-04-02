@@ -89,7 +89,7 @@ void load_level_folder(char *folder) {
             }
         }
     } else {
-        texts[0] = ui_create_label(0, 0, 0.5f, "Sorry nothing", 0.5f, NULL);
+        texts[0] = ui_create_label(0, 0, 0.5f, "No levels", 0.5f, NULL);
         ui_list_add(list, &texts[0]);
     }
 
