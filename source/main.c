@@ -155,6 +155,8 @@ unsigned int frame_counter = 0;
 
 bool exiting_level = false;
 
+bool song_loaded;
+
 void game_loop() {
     C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
     C2D_SceneBegin(top);
@@ -179,19 +181,20 @@ void game_loop() {
         return;
     }
     
+
     if (level_info.custom_song_id >= 0) {
         char full_path[273];
         snprintf(full_path, sizeof(full_path), "%s/%d.mp3", USER_SONGS_DIR, level_info.custom_song_id);
-        returned = play_mp3(full_path, false, level_info.song_offset);
+        song_loaded = play_mp3(full_path, false, level_info.song_offset);
     } else {
         if (state.custom_level) {
-            returned = play_mp3(main_levels[level_info.song_id].song_path, false, level_info.song_offset);
+            song_loaded = play_mp3(main_levels[level_info.song_id].song_path, false, level_info.song_offset);
         } else {
-            returned = play_mp3(main_levels[curr_level_id].song_path, false, 0);
+            song_loaded = play_mp3(main_levels[curr_level_id].song_path, false, 0);
         }
     }
 
-    pause_playback_mp3();
+    if (song_loaded) pause_playback_mp3();
 
     state.camera_x = 0;
     state.camera_y = 0;
@@ -496,7 +499,7 @@ void game_loop() {
                 if (state.death_timer <= 0.f) {
                     init_variables();
                     reload_level(); 
-                    unpause_playback_mp3();
+                    if (song_loaded) unpause_playback_mp3();
                     fixed_dt = true; 
                     state.dead = false;
                 }
@@ -667,13 +670,13 @@ void game_loop() {
         } while (handle_fading());
 
         if (being_faded) {
-            unpause_playback_mp3();
+            if (song_loaded) unpause_playback_mp3();
             being_faded = false;
         }
 
         if (exiting_level) {
             game_paused = false;
-            unpause_playback_mp3();
+            if (song_loaded) unpause_playback_mp3();
             break;
         }
     }

@@ -250,8 +250,10 @@ void init_variables() {
 
 void handle_death() {
     play_sfx(&explode_sound, 1);
-    pause_playback_mp3();
-    seek_mp3(level_info.song_offset);
+    if (song_loaded) {
+        pause_playback_mp3();
+        seek_mp3(level_info.song_offset);
+    }
 
     Player *player = (state.current_player == 1) ? &state.player2 : &state.player;
 

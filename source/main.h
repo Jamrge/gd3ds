@@ -18,6 +18,8 @@ extern unsigned int frame_counter;
 
 extern unsigned int level_frame;
 
+extern bool song_loaded;
+
 extern bool exiting_level;
 
 extern ParticleSystem touch_drag_particles;
