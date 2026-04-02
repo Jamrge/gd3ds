@@ -436,6 +436,8 @@ void spawn_object_at(
 
     // Skip if no glow frame
     if (glowEnabled && obj->glow_frame >= 0) {
+        if (sprite_count >= MAX_SPRITES - 1) return;
+        
         SpriteObject *vo = &viewable_objects[sprite_count];
 
         vo->spr = sprite_templates[id].glow_template;
@@ -917,6 +919,11 @@ void create_objects() {
                 float calc_y = SCREEN_HEIGHT - ((objects.y[obj] - state.camera_y));  
                 if (calc_x < -60 || calc_x >= (SCREEN_WIDTH / SCALE) + 60) continue;
                 if (calc_y < -60 || calc_y >= (SCREEN_HEIGHT / SCALE) + 60) continue;
+
+                // Skip invalid objects
+                if (objects.id[obj] > 745) {
+                    continue;
+                }
 
                 int fade_val = obj_edge_fade(calc_x, SCREEN_WIDTH / SCALE);
                 bool fade_edge = (fade_val == 255 || fade_val == 0);
