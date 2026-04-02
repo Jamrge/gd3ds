@@ -1085,6 +1085,12 @@ void draw_objects() {
             change_blending(false);
         }
     }
+    if (!blend_enabled) change_blending(true);
+        drawParticleSystem(&slow_speed_particles, 0, 0, 1.f);
+        drawParticleSystem(&normal_speed_particles, 0, 0, 1.f);
+        drawParticleSystem(&fast_speed_particles, 0, 0, 1.f);
+        drawParticleSystem(&faster_speed_particles, 0, 0, 1.f);
+        change_blending(false);
 
     if (!blend_enabled) change_blending(true);
     drawParticleSystem(&slow_speed_particles, 0, 0, 1.f);
