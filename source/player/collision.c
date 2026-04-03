@@ -940,7 +940,7 @@ void handle_collision(Player *player, int obj, const ObjectHitbox *hitbox) {
 
             clip += fabsf(state.old_player.vel_y) * delta;
 
-            bool bottom = gravBottom(player);
+            float bottom = gravBottom(player);
             
             if (player->slope_data.slope_id >= 0) {
                 bottom = bottom + sinf(slope_angle(player->slope_data.slope_id, player)) * player->height / 2;
@@ -993,7 +993,7 @@ void handle_collision(Player *player, int obj, const ObjectHitbox *hitbox) {
                     state.dead = true;
                 }
             // Check snap for player bottom
-            } else if (obj_gravTop(player, obj) - gravBottom(player) <= clip && player->vel_y <= 0 && player->gamemode != GAMEMODE_DART) {
+            } else if (obj_gravTop(player, obj) - bottom <= clip && player->vel_y <= 0 && player->gamemode != GAMEMODE_DART) {
                 player->y = grav(player, obj_gravTop(player, obj)) + grav(player, player->height / 2);
                 if (player->vel_y <= 0) player->vel_y = 0;
                 player->on_ground = true;
