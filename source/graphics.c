@@ -509,7 +509,7 @@ static inline uint32_t make_sort_key(SpriteObject *s)
     const int obj = s->obj;
 
     if (obj == -1) {
-        return ((5 + 8) << 17) | (0 << 16) | (0 << 8) | 0;
+        return ((5 + 8) << 18) | (0 << 16) | (0 << 8) | 0;
     }
 
     const int id = objects.id[obj];
@@ -520,9 +520,11 @@ static inline uint32_t make_sort_key(SpriteObject *s)
     // Blending makes zlayer one 
     int col_channel = objects.col_channel[obj];
 
+    bool blending = col_channel > 0 && (channels[col_channel].blending ^ ((zlayer & 1) == 0));
+
     if (s->layer == 1) {
         zlayer--;
-    } else if (col_channel > 0 && (channels[col_channel].blending ^ ((zlayer & 1) == 0))) {
+    } else if (blending) {
         zlayer--;
     }
 
@@ -552,12 +554,13 @@ static inline uint32_t make_sort_key(SpriteObject *s)
 
     s->zlayer = zlayer;
 
-    uint32_t zl = (uint32_t)(zlayer + 8);     // fits in 7 bits
+    uint32_t zl = (uint32_t)(zlayer + 8);     // fits in 6 bits
+    uint32_t zb = (uint32_t)(blending);       // fits in 1 bit
     uint32_t zs = (uint32_t)(sheet);          // fits in 1 bit
     uint32_t zo = (uint32_t)(zorder + 128);   // fits in 8 bits
     uint32_t cz = (uint32_t)(child_z + 128);  // fits in 8 bits
 
-    return (zl << 17) | (zs << 16) | (zo << 8) | cz;
+    return (zl << 18) | (zb << 17) | (zs << 16) | (zo << 8) | cz;
 }
 
 #define VIEW_OBJECTS (12 * 6)
