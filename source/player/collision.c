@@ -952,9 +952,9 @@ void handle_collision(Player *player, int obj, const ObjectHitbox *hitbox) {
             for (size_t i = 0; i < potential_slopes; i++) {
                 int potential_slope = potential_slopes_buffer[i];
 
-                unsigned char orient = objects.orientation[potential_slope];
-                float block_comp = orient < 2 ? obj_getTop(obj) : obj_getBottom(obj);
-                float slope_comp = orient < 2 ? obj_getBottom(potential_slope) : obj_getTop(potential_slope);
+                unsigned char orient = grav_slope_orient(potential_slope, player);
+                float block_comp = orient < 2 ? obj_gravTop(player, obj) : obj_gravBottom(player, obj);
+                float slope_comp = orient < 2 ? obj_gravBottom(player, potential_slope) : obj_gravTop(player, potential_slope);
 
                 if (block_comp - slope_comp < 2) {
                     return;
