@@ -156,7 +156,7 @@ float snap_player(Vec2D diff, Player *player) {
             break;
         default:
             memcpy(&stairs, &defaultSpeedSnaps, sizeof(Vec2D) * 3);
-            threshold = 2;
+            threshold = 1;
     }   
 
     // Check snaps
@@ -166,6 +166,7 @@ float snap_player(Vec2D diff, Player *player) {
             return threshold;
         }
     }
+    
     return 0;
 }
 
@@ -177,10 +178,12 @@ void trySnap(int block, Player *player) {
     float threshold = snap_player(diff, player);
     if (threshold > 0) {
         player->x = clampf(
-            player->x + diff.x,
+            objects.x[block] + player->snap_data.player_snap_diff,
             player->x - threshold,
             player->x + threshold
         );
+
+        player->snap_data.snapped_obj = block;
     }
 }
 
@@ -1003,6 +1006,7 @@ void handle_collision(Player *player, int obj, const ObjectHitbox *hitbox) {
 
                     player->snap_data.player_frame = level_frame;
                     player->snap_data.object_id = obj;
+                    player->snap_data.player_snap_diff = player->x - objects.x[obj];
                 }
             // Check snap for player top
             } else if (player->gamemode != GAMEMODE_DART) {

@@ -32,6 +32,8 @@ typedef struct {
 typedef struct {
     int object_id;
     int player_frame;
+    float player_snap_diff;
+    int snapped_obj;
 } SnapData;
 
 typedef struct {

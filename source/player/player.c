@@ -83,15 +83,6 @@ void update_rotation_direction(Player *player) {
     player->rotation_direction = (player->upside_down ? -1 : 1);
 }
 
-float roundVel(double velocity, bool upsideDown) {
-	float nVel = velocity / 54.0 * (upsideDown * 2 - 1);
-	float floored = (int)nVel;
-	if (nVel != floored) {
-		nVel = (float) roundf((nVel - floored) * 1000.0) / 1000.0 + floored;
-	}
-	return nVel * 54.0 * (upsideDown * 2 - 1);
-}
-
 void cube_gamemode(Player *player) {
     int mult = player->rotation_direction;
     
@@ -509,6 +500,15 @@ void run_player(Player *player) {
         spawnMultipleParticles(&land_particles[state.current_player], 10);
     }
 
+    // Coyote
+    if (gravBottom(&state.old_player) > gravFloor(&state.old_player) && player->upside_down == state.old_player.upside_down && !player->on_ground && player->vel_y <= 0) {
+		if (state.old_player.on_ground && !state.old_input.holdJump)
+			player->coyote_frames = 0;
+		player->coyote_frames++;
+	} else {
+		player->coyote_frames = INT32_MAX;
+	}
+
     switch (player->gamemode) {
         case GAMEMODE_PLAYER:
             cube_gamemode(player);
@@ -550,30 +550,22 @@ void run_player(Player *player) {
         }
     }
 
-    // Coyote
-    if (gravBottom(&state.old_player) > gravFloor(&state.old_player) && player->upside_down == state.old_player.upside_down && !player->on_ground && player->vel_y <= 0) {
-		if (state.old_player.on_ground && !state.old_input.holdJump)
-			player->coyote_frames = 0;
-		player->coyote_frames++;
-	} else {
-		player->coyote_frames = INT32_MAX;
-	}
-
     if (!player->velocity_override) {
-		double newVel = player->vel_y + player->gravity * STEPS_DT;
+		float newVel = player->vel_y + player->gravity * STEPS_DT;
 
 		// Player will fall off blocks a frame faster than expected
-		if (!player->on_ground && state.old_player.on_ground && ((!state.input.holdJump && (state.old_input.pressedJump|| state.input.pressedJump)) || player->buffering_state == BUFFER_READY) && gravBottom(&state.old_player) > gravFloor(&state.old_player) && player->mini == state.old_player.mini) {
-			player->y += roundVel(grav(&state.old_player, state.old_player.gravity) * STEPS_DT, state.old_player.upside_down) * STEPS_DT;
+		if (!player->on_ground && state.old_player.on_ground && ((!state.input.holdJump && (state.old_input.pressedJump || state.input.pressedJump)) || player->buffering_state == BUFFER_READY) && gravBottom(&state.old_player) > gravFloor(&state.old_player) && player->mini == state.old_player.mini) {
+			player->y += grav(&state.old_player, state.old_player.gravity) * STEPS_DT * STEPS_DT;
 
 			if (player->vel_y == 0)
-				newVel += roundVel(state.old_player.gravity * STEPS_DT, player->upside_down);
+				newVel += state.old_player.gravity * STEPS_DT;
 		}
+
         player->vel_y = newVel;
 	}
 
     if (player->gamemode != GAMEMODE_PLAYER_BALL) {
-        player->vel_y = roundVel(player->vel_y, player->upside_down);
+        player->vel_y = player->vel_y;
     }
 
     if (player->cutscene_timer > 0) return;
@@ -594,10 +586,9 @@ void run_player(Player *player) {
         }
     }
     
-    player->vel_x = player_speeds[state.speed];
-    player->y += player_get_vel(player, player->vel_y) * STEPS_DT;
-    
+    player->vel_x = player_speeds[state.speed]; 
     player->x += player->vel_x * STEPS_DT;
+    player->y += player_get_vel(player, player->vel_y) * STEPS_DT;
 
     player->left_ground = false;
 
@@ -949,6 +940,7 @@ void draw_hitbox(int obj) {
     if (hitbox_type == HITBOX_SPECIAL) color = C2D_Color32(0x00, 0xff, 0x00, 0xff);
     
     if (obj == state.player.slope_data.slope_id || obj == state.player2.slope_data.slope_id) color = C2D_Color32(0x00, 0xff, 0x00, 0xff);
+    if (obj == state.player.snap_data.snapped_obj || obj == state.player2.snap_data.snapped_obj) color = C2D_Color32(0xff, 0xff, 0x00, 0xff);
 
     Vec2D rect[4];
     if (hitbox->type == COLLISION_SLOPE) {
