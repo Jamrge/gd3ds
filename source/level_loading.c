@@ -1281,12 +1281,6 @@ void load_level_info(char *data, char *level_string) {
     }
 }
 
-const int rod_images[3] = {
-    634,
-    635,
-    636
-};
-
 int load_level(char *path) {
     size_t out;
     char *level = read_file(path, &out);
@@ -1321,15 +1315,15 @@ int load_level(char *path) {
     set_color_channels();
 
     // Set pulserod pulse ball image
-    current_pulserod_ball_image = rand() % 3;
+    current_pulserod_ball_image = game_objects[15].children[0].texture + (rand() % 3);
 
-    C2D_SpriteFromSheet(&sprite_templates[15].child_templates[0], spriteSheet, rod_images[current_pulserod_ball_image]);
+    C2D_SpriteFromSheet(&sprite_templates[15].child_templates[0], spriteSheet, current_pulserod_ball_image);
     C2D_SpriteSetCenter(&sprite_templates[15].child_templates[0], 0.5f, 0.5f);
     
-    C2D_SpriteFromSheet(&sprite_templates[16].child_templates[0], spriteSheet, rod_images[current_pulserod_ball_image]);
+    C2D_SpriteFromSheet(&sprite_templates[16].child_templates[0], spriteSheet, current_pulserod_ball_image);
     C2D_SpriteSetCenter(&sprite_templates[16].child_templates[0], 0.5f, 0.5f);
 
-    C2D_SpriteFromSheet(&sprite_templates[17].child_templates[0], spriteSheet, rod_images[current_pulserod_ball_image]);
+    C2D_SpriteFromSheet(&sprite_templates[17].child_templates[0], spriteSheet, current_pulserod_ball_image);
     C2D_SpriteSetCenter(&sprite_templates[17].child_templates[0], 0.5f, 0.5f);
 
     return 0;
