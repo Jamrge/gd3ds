@@ -946,8 +946,8 @@ void handle_collision(Player *player, int obj, const ObjectHitbox *hitbox) {
                     return;
             }
             
-            for (size_t i = 0; i < potential_slopes; i++) {
-                int potential_slope = potential_slopes_buffer[i];
+            for (size_t i = 0; i < potential_slopes[state.current_player]; i++) {
+                int potential_slope = potential_slopes_buffer[state.current_player][i];
 
                 unsigned char orient = grav_slope_orient(potential_slope, player);
                 float block_comp = orient < 2 ? obj_gravTop(player, obj) : obj_gravBottom(player, obj);
@@ -1117,8 +1117,8 @@ int block_count = 0;
 int hazard_buffer[MAX_COLLIDED_OBJECTS];
 int hazard_count = 0;
 
-int potential_slopes_buffer[MAX_COLLIDED_OBJECTS];
-int potential_slopes = 0;
+int potential_slopes_buffer[2][MAX_COLLIDED_OBJECTS];
+int potential_slopes[2];
 
 int number_of_collisions = 0;
 int number_of_collisions_checks = 0;
@@ -1166,7 +1166,7 @@ void collide_with_objects(Player *player) {
         int obj = block_buffer[i];
         collide_with_obj(player, obj);
     }
-    potential_slopes = 0;
+    potential_slopes[state.current_player] = 0;
 
     bool has_slope = player->slope_data.slope_id >= 0;
     for (int i = 0; i < slope_count; i++) {

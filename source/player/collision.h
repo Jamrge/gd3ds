@@ -83,8 +83,8 @@ extern int number_of_collisions_checks;
 
 #define MAX_COLLIDED_OBJECTS 512
 
-extern int potential_slopes_buffer[MAX_COLLIDED_OBJECTS];
-extern int potential_slopes;
+extern int potential_slopes_buffer[2][MAX_COLLIDED_OBJECTS];
+extern int potential_slopes[2];
 
 void setup_dual();
 

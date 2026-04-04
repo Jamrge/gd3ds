@@ -369,8 +369,8 @@ bool player_circle_touches_slope(int obj, Player *player) {
 }
 
 void slope_collide(int obj, Player *player) {
-    if (potential_slopes < MAX_COLLIDED_OBJECTS) {
-        potential_slopes_buffer[potential_slopes++] = obj;
+    if (potential_slopes[state.current_player] < MAX_COLLIDED_OBJECTS) {
+        potential_slopes_buffer[state.current_player][potential_slopes[state.current_player]++] = obj;
     }
     
     int clip = (player->gamemode == GAMEMODE_SHIP || player->gamemode == GAMEMODE_BIRD) ? 7 : 10;
